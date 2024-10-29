@@ -3,10 +3,22 @@ const BASE_URL = "http://192.168.1.8:5000"
 //const BASE_URL = "https://flask-hello-world-stb5.onrender.com"
 
 let switchSiteSelected = "Bureau Paris";
+
 let workerSelected = null;
 let workerSelectedNum = -1;
 
 let sitesData = null;
+let workersData = null;
+
+let isModiferState = false;
+
+const colorGreen = '#8FE2A4';
+const colorGray = '#E5E5E5';
+
+const weekLimit = 52;
+let currentWeek = 0;
+var dayRectangle = new Date();
+dayRectangle.setDate(dayRectangle.getDate()-7);
 
 async function getSites() {
   if (sitesData) {
@@ -27,22 +39,6 @@ async function getSites() {
     console.error('Erreur:', error); // Gestion des erreurs
   }
 }
-
-function getRandomColor() {
-  // Génère une teinte (Hue) entre 0 et 360 degrés
-  const hue = Math.floor(Math.random() * 360);
-
-  // Saturation fixée à 70% pour des couleurs vives
-  const saturation = 70; 
-
-  // Luminosité entre 50% et 70% pour éviter des couleurs trop sombres ou trop claires
-  const lightness = Math.floor(Math.random() * 20) + 50;
-
-  // Créer la couleur en utilisant le modèle HSL
-  return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
-}
-
-let workersData = null;
 
 async function getWorkers() {
   if (workersData) {
@@ -69,113 +65,6 @@ async function getWorkers() {
 
   } catch (error) {
     console.error('Erreur:', error); // Gestion des erreurs
-  }
-}
-
-function getRandomWorker(){
-  workerSelectedNum += 1;
-  return workersData[workerSelectedNum%workersData.length];
-  //return workersData[Math.floor(Math.random() * workersData.length)];
-}
-
-const selectWorkerCircle = document.getElementById("selectWorker");
-
-selectWorkerCircle.addEventListener("click", () => {
-  workerSelected = getRandomWorker();
-  selectWorkerCircle.style.backgroundColor = workerSelected.color;
-  selectWorkerCircle.textContent = workerSelected.firstname[0] + workerSelected.lastname[0];
-
-  const circles = document.querySelectorAll('.circle');
-  circles.forEach(circle => {
-    circle.classList.remove('circle-inner-border');
-    if (circle.id === workerSelected.firstname + "_" + workerSelected.lastname) {
-      circle.classList.add('circle-inner-border');
-    }
-  });
-
-
-});
-
-// Animation switch lieux
-document.addEventListener('DOMContentLoaded', function() {
-  const firstSite = document.querySelector('.sites:nth-child(1)');
-  const animation = document.querySelector('.animation');
-
-  // Sélectionner par défaut le premier élément
-  firstSite.classList.add('active');
-  animation.style.left = firstSite.getAttribute('data-target') + 'px';
-  animation.style.width = firstSite.offsetWidth - 6 + 'px'; // Largeur de l'élément sélectionné (enlever les marges)
-
-  // Gérer les clics sur les autres éléments
-  document.querySelectorAll('.sites').forEach(site => {
-    site.addEventListener('click', function() {
-      // Supprimer la classe active de tous les autres éléments
-      document.querySelectorAll('.sites').forEach(s => s.classList.remove('active'));
-
-      // Ajouter la classe active à l'élément sélectionné
-      this.classList.add('active');
-
-      // Déplacer l'animation
-      const targetLeft = this.getAttribute('data-target'); // Valeur "left" à partir de l'attribut data-target
-      animation.style.left = targetLeft + 'px';
-      animation.style.width = this.offsetWidth - 6 + 'px'; // Largeur de l'élément sélectionné (enlever les marges)
-
-      document.querySelectorAll('.main').forEach(e => e.remove());
-
-      currentWeek = 0;
-      dayRectangle = new Date();
-      dayRectangle.setDate(dayRectangle.getDate()-7);
-
-      if (switchSiteSelected === "Bureau Paris"){
-        switchSiteSelected = "Bureau Lyon";
-      }else{
-        switchSiteSelected = "Bureau Paris";
-      }
-
-      createWeek();
-      sleep(200).then(() => {
-        createWeek();
-        createWeek();   
-      });
-      
-    });
-  });
-});
-
-const colorGreen = '#8FE2A4';
-const colorGray = '#E5E5E5';
-
-let isModiferState = false;
-
-const modifierButton = document.getElementById('modifierButton');
-
-
-async function deleteReservation(workerId, siteId, date) {
-  const url = BASE_URL + "/reservations";
-  
-  const body = JSON.stringify({
-    worker_id: workerId,
-    site_id: siteId,
-    date: date
-  });
-
-  try {
-    const response = await fetch(url, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: body
-    });
-
-    if (!response.ok) {
-      throw new Error(`Erreur: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    console.log('Réservation supprimée:', data);
-  } catch (error) {
-    console.error('Erreur lors de la suppression de la réservation:', error);
   }
 }
 
@@ -222,7 +111,135 @@ async function createReservation(workerId, siteId, date) {
   }
 }
 
-function handleClick() {
+async function deleteReservation(workerId, siteId, date) {
+  const url = BASE_URL + "/reservations";
+  
+  const body = JSON.stringify({
+    worker_id: workerId,
+    site_id: siteId,
+    date: date
+  });
+
+  try {
+    const response = await fetch(url, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: body
+    });
+
+    if (!response.ok) {
+      throw new Error(`Erreur: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log('Réservation supprimée:', data);
+  } catch (error) {
+    console.error('Erreur lors de la suppression de la réservation:', error);
+  }
+}
+
+function getRandomColor() {
+  // Génère une teinte (Hue) entre 0 et 360 degrés
+  const hue = Math.floor(Math.random() * 360);
+
+  // Saturation fixée à 70% pour des couleurs vives
+  const saturation = 70; 
+
+  // Luminosité entre 50% et 70% pour éviter des couleurs trop sombres ou trop claires
+  const lightness = Math.floor(Math.random() * 20) + 50;
+
+  // Créer la couleur en utilisant le modèle HSL
+  return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+}
+
+function getRandomWorker(){
+  workerSelectedNum += 1;
+  return workersData[workerSelectedNum%workersData.length];
+  //return workersData[Math.floor(Math.random() * workersData.length)];
+}
+
+const selectWorkerCircle = document.getElementById("selectWorker");
+selectWorkerCircle.addEventListener("click", () => {
+  workerSelected = getRandomWorker();
+  selectWorkerCircle.style.backgroundColor = workerSelected.color;
+  selectWorkerCircle.textContent = workerSelected.firstname[0] + workerSelected.lastname[0];
+
+  const circles = document.querySelectorAll('.circle');
+  circles.forEach(circle => {
+    circle.classList.remove('circle-inner-border');
+    if (circle.id === workerSelected.firstname + "_" + workerSelected.lastname) {
+      circle.classList.add('circle-inner-border');
+    }
+  });
+
+
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+  const firstSite = document.querySelector('.sites:nth-child(1)');
+  const animation = document.querySelector('.animation');
+
+  // Sélectionner par défaut le premier élément
+  firstSite.classList.add('active');
+  animation.style.left = firstSite.getAttribute('data-target') + 'px';
+  animation.style.width = firstSite.offsetWidth - 6 + 'px'; // Largeur de l'élément sélectionné (enlever les marges)
+
+  // Gérer les clics sur les autres éléments
+  document.querySelectorAll('.sites').forEach(site => {
+    site.addEventListener('click', function() {
+      // Supprimer la classe active de tous les autres éléments
+      document.querySelectorAll('.sites').forEach(s => s.classList.remove('active'));
+
+      // Ajouter la classe active à l'élément sélectionné
+      this.classList.add('active');
+
+      // Déplacer l'animation
+      const targetLeft = this.getAttribute('data-target'); // Valeur "left" à partir de l'attribut data-target
+      animation.style.left = targetLeft + 'px';
+      animation.style.width = this.offsetWidth - 6 + 'px'; // Largeur de l'élément sélectionné (enlever les marges)
+
+      document.querySelectorAll('.main').forEach(e => e.remove());
+
+      currentWeek = 0;
+      dayRectangle = new Date();
+      dayRectangle.setDate(dayRectangle.getDate()-7);
+
+      if (switchSiteSelected === "Bureau Paris"){
+        switchSiteSelected = "Bureau Lyon";
+      }else{
+        switchSiteSelected = "Bureau Paris";
+      }
+
+      createWeek();
+      createWeek();
+      createWeek();   
+    
+    });
+  });
+});
+
+const weekContainer = document.getElementById("weekSelector");
+const handleInfiniteScroll = () => {
+  const endOfScroll =
+  weekContainer.scrollLeft + 2 * weekContainer.clientWidth >= weekContainer.scrollWidth - 5; // Détecte la fin du scroll
+
+  if (endOfScroll && currentWeek < weekLimit) {
+    createWeek();
+  }
+
+  if (currentWeek === weekLimit) {
+    removeInfiniteScroll();
+  }
+};
+weekContainer.addEventListener("scroll", handleInfiniteScroll);
+
+const removeInfiniteScroll = () => {
+  window.removeEventListener("scroll", handleInfiniteScroll);
+};
+
+function reservationClick() {
   if (isModiferState) {
     isReserved = this.querySelector("#" + workerSelected.firstname + "_" + workerSelected.lastname);
 
@@ -264,13 +281,6 @@ function handleClick() {
   }
 }
 
-const weekLimit = 52;
-let currentWeek = 0;
-var dayRectangle = new Date();
-dayRectangle.setDate(dayRectangle.getDate()-7);
-
-
-const weekContainer = document.getElementById("weekSelector");
 const createWeek = () => {
 
   currentWeek += 1;
@@ -468,6 +478,7 @@ const createWeek = () => {
 
   const rectangles = document.querySelectorAll(".big_rectangle, .small_rectangle");
 
+  const modifierButton = document.getElementById('modifierButton');
   modifierButton.onclick = function() {
 
     const circles = document.querySelectorAll('.circle');
@@ -503,8 +514,8 @@ const createWeek = () => {
   };
 
   rectangles.forEach(rect => {
-    rect.removeEventListener('click', handleClick);
-    rect.addEventListener('click', handleClick);
+    rect.removeEventListener('click', reservationClick);
+    rect.addEventListener('click', reservationClick);
   });
 
 
@@ -592,29 +603,6 @@ const createWeek = () => {
   fetchReservationsForParis();
 
 };
-
-
-const handleInfiniteScroll = () => {
-  const endOfScroll =
-  weekContainer.scrollLeft + 2 * weekContainer.clientWidth >= weekContainer.scrollWidth - 5; // Détecte la fin du scroll
-
-  if (endOfScroll && currentWeek < weekLimit) {
-    createWeek();
-  }
-
-  if (currentWeek === weekLimit) {
-    removeInfiniteScroll();
-  }
-};
-weekContainer.addEventListener("scroll", handleInfiniteScroll);
-
-const removeInfiniteScroll = () => {
-  window.removeEventListener("scroll", handleInfiniteScroll);
-};
-
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
 
 window.onload = async function () {
   await getSites();
