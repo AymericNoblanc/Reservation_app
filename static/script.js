@@ -610,7 +610,7 @@ function sleep(ms) {
 
 
 createWeek();
-sleep(5000).then(() => {
+sleep(200).then(() => {
   createWeek();
   createWeek(); 
 });
