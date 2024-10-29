@@ -1,6 +1,6 @@
-//const BASE_URL = "http://192.168.1.8:5000"
+const BASE_URL = "http://192.168.1.8:5000"
 //const BASE_URL = "http://127.0.0.1:5000"
-const BASE_URL = "https://flask-hello-world-stb5.onrender.com"
+//const BASE_URL = "https://flask-hello-world-stb5.onrender.com"
 
 async function APIrequest(apiURL){
   try {
