@@ -2,34 +2,25 @@ const BASE_URL = "http://192.168.1.8:5000"
 //const BASE_URL = "http://127.0.0.1:5000"
 //const BASE_URL = "https://flask-hello-world-stb5.onrender.com"
 
-async function APIrequest(apiURL){
-  try {
-    const response = await fetch(apiURL);
-    if (!response.ok) {
-      throw new Error('Erreur lors de la récupération des données');
-    }
-    const data = await response.json();
-    return data
-
-  } catch (error) {
-    console.error('Erreur:', error);
-  }
-}
-
 let switchSiteSelected = "Bureau Paris";
 let workerSelected = null;
 let workerSelectedNum = -1;
 
 let sitesData = null;
 
-async function getSitesId() {
+async function getSites() {
   if (sitesData) {
     // Si les données sont déjà récupérées, les retourner directement
     return sitesData;
   }
 
   try {
-    sitesData = await APIrequest(BASE_URL + "/sites"); // Appel de l'API
+
+    sitesData = await fetch(BASE_URL + "/sites"); // Appel de l'API
+    if (!sitesData.ok) {
+      throw new Error('Erreur lors de la récupération des données');
+    }
+    sitesData = await sitesData.json();
     return sitesData;
 
   } catch (error) {
@@ -60,7 +51,11 @@ async function getWorkers() {
   }
 
   try {
-    workersData = await APIrequest(BASE_URL + "/workers"); // Appel de l'API
+    workersData = await fetch(BASE_URL + "/workers"); // Appel de l'API
+    if (!workersData.ok) {
+      throw new Error('Erreur lors de la récupération des données');
+    }
+    workersData = await workersData.json();
 
     workersData.forEach((element) => {
       element.color = getRandomColor();
@@ -69,7 +64,6 @@ async function getWorkers() {
     workerSelected = getRandomWorker();
     selectWorkerCircle.style.backgroundColor = workerSelected.color;
     selectWorkerCircle.textContent = workerSelected.firstname[0] + workerSelected.lastname[0];
-
 
     return workersData;
 
@@ -185,6 +179,20 @@ async function deleteReservation(workerId, siteId, date) {
   }
 }
 
+async function getWeekReservation(siteId, date) {
+  try {
+    const response = await fetch(BASE_URL + "/reservations/site/" + siteId + "/week?start_date=" + date);
+    if (!response.ok) {
+      throw new Error('Erreur lors de la récupération des données');
+    }
+    const data = await response.json();
+    return data
+
+  } catch (error) {
+    console.error('Erreur:', error);
+  }
+}
+
 async function createReservation(workerId, siteId, date) {
   const url = BASE_URL + "/reservations";
   
@@ -218,17 +226,17 @@ function handleClick() {
   if (isModiferState) {
     isReserved = this.querySelector("#" + workerSelected.firstname + "_" + workerSelected.lastname);
 
-    const siteId = sitesData.find(site => site.name === switchSiteSelected).id;
+    const site = sitesData.find(site => site.name === switchSiteSelected);
 
     const worker = workersData.find(worker => worker.firstname === workerSelected.firstname && worker.lastname === workerSelected.lastname);
     
     if (isReserved){
       this.style.backgroundColor = colorGray;
-      deleteReservation(worker.id, siteId, this.id);
+      deleteReservation(worker.id, site.id, this.id);
       isReserved.remove();
     }else{
       this.style.backgroundColor = colorGreen;
-      createReservation(worker.id, siteId, this.id);
+      createReservation(worker.id, site.id, this.id);
       const circle = document.createElement('div');
       circle.classList.add('circle'); // Ajoute la classe pour le style
 
@@ -489,7 +497,7 @@ const createWeek = () => {
           element.style.backgroundColor = '#FFE371';
         }
       });
-      this.innerText = "M'enregistrer"
+      this.innerText = "Réserver"
     }
     isModiferState = !isModiferState;
   };
@@ -517,10 +525,10 @@ const createWeek = () => {
 
       // Récupérer l'ID du site pour "Bureau Paris"
 
-      const sitesId = await getSitesId();
+      const sitesId = await getSites();
       const siteId = sitesId.find(site => site.name === switchSiteSelected).id;
 
-      const reservationParis = await APIrequest(BASE_URL + "/reservations/site/" + siteId + "/week?start_date=" + weekRectangle);
+      const reservationParis = await getWeekReservation(siteId, weekRectangle);
 
       const workers = await getWorkers();
                   
@@ -608,9 +616,11 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+window.onload = async function () {
+  await getSites();
+  await getWorkers();
 
-createWeek();
-sleep(200).then(() => {
+  createWeek();
   createWeek();
   createWeek(); 
-});
+};
