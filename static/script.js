@@ -20,6 +20,8 @@ let currentWeek = 0;
 var dayRectangle = new Date();
 dayRectangle.setDate(dayRectangle.getDate()-7);
 
+// API call :
+
 async function getSites() {
   if (sitesData) {
     // Si les données sont déjà récupérées, les retourner directement
@@ -140,6 +142,8 @@ async function deleteReservation(workerId, siteId, date) {
   }
 }
 
+// Gestion du travailleur sélectionné
+
 function getRandomColor() {
   // Génère une teinte (Hue) entre 0 et 360 degrés
   const hue = Math.floor(Math.random() * 360);
@@ -176,6 +180,8 @@ selectWorkerCircle.addEventListener("click", () => {
 
 
 });
+
+// Gestion du slide des sites
 
 document.addEventListener('DOMContentLoaded', function() {
   const firstSite = document.querySelector('.sites:nth-child(1)');
@@ -220,8 +226,10 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 });
 
+// Gestion du scroll entre les différentes semaines
+
 const weekContainer = document.getElementById("weekSelector");
-const handleInfiniteScroll = () => {
+function handleInfiniteScroll () {
   const endOfScroll =
   weekContainer.scrollLeft + 2 * weekContainer.clientWidth >= weekContainer.scrollWidth - 5; // Détecte la fin du scroll
 
@@ -235,7 +243,7 @@ const handleInfiniteScroll = () => {
 };
 weekContainer.addEventListener("scroll", handleInfiniteScroll);
 
-const removeInfiniteScroll = () => {
+function removeInfiniteScroll () {
   window.removeEventListener("scroll", handleInfiniteScroll);
 };
 
@@ -281,12 +289,12 @@ function reservationClick() {
   }
 }
 
-const createWeek = () => {
+// Création d'une semaine
 
+function weekTemplate (){
   currentWeek += 1;
 
   dayRectangle.setDate((dayRectangle.getDate() - (dayRectangle.getDay() + 6) % 7)+7);
-
   var formattedDate = dayRectangle.getFullYear() + '-' +
     String(dayRectangle.getMonth() + 1).padStart(2, '0') + '-' +
     String(dayRectangle.getDate()).padStart(2, '0');
@@ -475,6 +483,11 @@ const createWeek = () => {
 
   // Ajouter l'élément principal dans le container (par exemple `body`)
   weekContainer.appendChild(mainDiv);
+}
+
+function createWeek () {
+
+  weekTemplate();
 
   const rectangles = document.querySelectorAll(".big_rectangle, .small_rectangle");
 
@@ -528,13 +541,10 @@ const createWeek = () => {
       var diffToMonday = (dayOfWeek + 6) % 7; // Trouver le décalage pour revenir à Lundi (si on est Dimanche, ce sera 6)
       weekRectangle.setDate(weekRectangle.getDate() - diffToMonday); // Revenir au lundi
 
-      // Ajouter les semaines en fonction de `currentWeek`
       weekRectangle.setDate(weekRectangle.getDate() + 7 * (currentWeek-1));
       weekRectangle = weekRectangle.getFullYear() + '-' +
       String(weekRectangle.getMonth() + 1).padStart(2, '0') + '-' +
       String(weekRectangle.getDate()).padStart(2, '0');
-
-      // Récupérer l'ID du site pour "Bureau Paris"
 
       const sitesId = await getSites();
       const siteId = sitesId.find(site => site.name === switchSiteSelected).id;
@@ -604,9 +614,19 @@ const createWeek = () => {
 
 };
 
+// Démarage de l'app
+
 window.onload = async function () {
+
+  weekTemplate();
+
   await getSites();
   await getWorkers();
+
+  document.querySelectorAll('.main').forEach(e => e.remove());
+  currentWeek = 0;
+  dayRectangle = new Date();
+  dayRectangle.setDate(dayRectangle.getDate()-7);
 
   createWeek();
   createWeek();
