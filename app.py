@@ -8,7 +8,7 @@ CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
 
 # Fonction pour se connecter à la base de données PostgreSQL
-'''
+
 def get_db_connection():
     conn = psycopg2.connect(
         host="dpg-csdbse08fa8c73907000-a.frankfurt-postgres.render.com",
@@ -29,6 +29,7 @@ def get_db_connection():
         password=""  # Remplace par ton mot de passe PostgreSQL
     )
     return conn
+'''
 
 @app.route('/')
 def home():
