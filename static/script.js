@@ -2,9 +2,77 @@
 //const BASE_URL = "http://127.0.0.1:5000"
 const BASE_URL = "https://flask-hello-world-stb5.onrender.com"
 
-async function APIrequest(apiURL){
+let switchSiteSelected = "Bureau Paris";
+
+let workerSelected = null;
+let workerSelectedNum = -1;
+
+let sitesData = null;
+let workersData = null;
+
+let isModiferState = false;
+
+const colorGreen = '#8FE2A4';
+const colorGray = '#E5E5E5';
+
+const weekLimit = 52;
+let currentWeek = 0;
+var dayRectangle = new Date();
+dayRectangle.setDate(dayRectangle.getDate()-7);
+
+// API call :
+
+async function getSites() {
+  if (sitesData) {
+    // Si les données sont déjà récupérées, les retourner directement
+    return sitesData;
+  }
+
   try {
-    const response = await fetch(apiURL);
+
+    sitesData = await fetch(BASE_URL + "/sites"); // Appel de l'API
+    if (!sitesData.ok) {
+      throw new Error('Erreur lors de la récupération des données');
+    }
+    sitesData = await sitesData.json();
+    return sitesData;
+
+  } catch (error) {
+    console.error('Erreur:', error); // Gestion des erreurs
+  }
+}
+
+async function getWorkers() {
+  if (workersData) {
+    // Si les données sont déjà récupérées, les retourner directement
+    return workersData;
+  }
+
+  try {
+    workersData = await fetch(BASE_URL + "/workers"); // Appel de l'API
+    if (!workersData.ok) {
+      throw new Error('Erreur lors de la récupération des données');
+    }
+    workersData = await workersData.json();
+
+    workersData.forEach((element) => {
+      element.color = getRandomColor();
+    });
+
+    workerSelected = getRandomWorker();
+    selectWorkerCircle.style.backgroundColor = workerSelected.color;
+    selectWorkerCircle.textContent = workerSelected.firstname[0] + workerSelected.lastname[0];
+
+    return workersData;
+
+  } catch (error) {
+    console.error('Erreur:', error); // Gestion des erreurs
+  }
+}
+
+async function getWeekReservation(siteId, date) {
+  try {
+    const response = await fetch(BASE_URL + "/reservations/site/" + siteId + "/week?start_date=" + date);
     if (!response.ok) {
       throw new Error('Erreur lors de la récupération des données');
     }
@@ -16,26 +84,65 @@ async function APIrequest(apiURL){
   }
 }
 
-let switchSiteSelected = "Bureau Paris";
-let workerSelected = null;
-let workerSelectedNum = -1;
-
-let sitesData = null;
-
-async function getSitesId() {
-  if (sitesData) {
-    // Si les données sont déjà récupérées, les retourner directement
-    return sitesData;
-  }
+async function createReservation(workerId, siteId, date) {
+  const url = BASE_URL + "/reservations";
+  
+  const body = JSON.stringify({
+    worker_id: workerId,
+    site_id: siteId,
+    date: date
+  });
 
   try {
-    sitesData = await APIrequest(BASE_URL + "/sites"); // Appel de l'API
-    return sitesData;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: body
+    });
 
+    if (!response.ok) {
+      throw new Error(`Erreur: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log('Réservation créée:', data);
   } catch (error) {
-    console.error('Erreur:', error); // Gestion des erreurs
+    console.error('Erreur lors de la création de la réservation:', error);
   }
 }
+
+async function deleteReservation(workerId, siteId, date) {
+  const url = BASE_URL + "/reservations";
+  
+  const body = JSON.stringify({
+    worker_id: workerId,
+    site_id: siteId,
+    date: date
+  });
+
+  try {
+    const response = await fetch(url, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: body
+    });
+
+    if (!response.ok) {
+      throw new Error(`Erreur: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log('Réservation supprimée:', data);
+  } catch (error) {
+    console.error('Erreur lors de la suppression de la réservation:', error);
+  }
+}
+
+// Gestion du travailleur sélectionné
 
 function getRandomColor() {
   // Génère une teinte (Hue) entre 0 et 360 degrés
@@ -51,33 +158,6 @@ function getRandomColor() {
   return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
 }
 
-let workersData = null;
-
-async function getWorkers() {
-  if (workersData) {
-    // Si les données sont déjà récupérées, les retourner directement
-    return workersData;
-  }
-
-  try {
-    workersData = await APIrequest(BASE_URL + "/workers"); // Appel de l'API
-
-    workersData.forEach((element) => {
-      element.color = getRandomColor();
-    });
-
-    workerSelected = getRandomWorker();
-    selectWorkerCircle.style.backgroundColor = workerSelected.color;
-    selectWorkerCircle.textContent = workerSelected.firstname[0] + workerSelected.lastname[0];
-
-
-    return workersData;
-
-  } catch (error) {
-    console.error('Erreur:', error); // Gestion des erreurs
-  }
-}
-
 function getRandomWorker(){
   workerSelectedNum += 1;
   return workersData[workerSelectedNum%workersData.length];
@@ -85,7 +165,6 @@ function getRandomWorker(){
 }
 
 const selectWorkerCircle = document.getElementById("selectWorker");
-
 selectWorkerCircle.addEventListener("click", () => {
   workerSelected = getRandomWorker();
   selectWorkerCircle.style.backgroundColor = workerSelected.color;
@@ -102,7 +181,8 @@ selectWorkerCircle.addEventListener("click", () => {
 
 });
 
-// Animation switch lieux
+// Gestion du slide des sites
+
 document.addEventListener('DOMContentLoaded', function() {
   const firstSite = document.querySelector('.sites:nth-child(1)');
   const animation = document.querySelector('.animation');
@@ -139,96 +219,49 @@ document.addEventListener('DOMContentLoaded', function() {
       }
 
       createWeek();
-      sleep(200).then(() => {
-        createWeek();
-        createWeek();   
-      });
-      
+      createWeek();
+      createWeek();   
+    
     });
   });
 });
 
-const colorGreen = '#8FE2A4';
-const colorGray = '#E5E5E5';
+// Gestion du scroll entre les différentes semaines
 
-let isModiferState = false;
+const weekContainer = document.getElementById("weekSelector");
+function handleInfiniteScroll () {
+  const endOfScroll =
+  weekContainer.scrollLeft + 2 * weekContainer.clientWidth >= weekContainer.scrollWidth - 5; // Détecte la fin du scroll
 
-const modifierButton = document.getElementById('modifierButton');
-
-
-async function deleteReservation(workerId, siteId, date) {
-  const url = BASE_URL + "/reservations";
-  
-  const body = JSON.stringify({
-    worker_id: workerId,
-    site_id: siteId,
-    date: date
-  });
-
-  try {
-    const response = await fetch(url, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: body
-    });
-
-    if (!response.ok) {
-      throw new Error(`Erreur: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    console.log('Réservation supprimée:', data);
-  } catch (error) {
-    console.error('Erreur lors de la suppression de la réservation:', error);
+  if (endOfScroll && currentWeek < weekLimit) {
+    createWeek();
   }
-}
 
-async function createReservation(workerId, siteId, date) {
-  const url = BASE_URL + "/reservations";
-  
-  const body = JSON.stringify({
-    worker_id: workerId,
-    site_id: siteId,
-    date: date
-  });
-
-  try {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: body
-    });
-
-    if (!response.ok) {
-      throw new Error(`Erreur: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    console.log('Réservation créée:', data);
-  } catch (error) {
-    console.error('Erreur lors de la création de la réservation:', error);
+  if (currentWeek === weekLimit) {
+    removeInfiniteScroll();
   }
-}
+};
+weekContainer.addEventListener("scroll", handleInfiniteScroll);
 
-function handleClick() {
+function removeInfiniteScroll () {
+  window.removeEventListener("scroll", handleInfiniteScroll);
+};
+
+function reservationClick() {
   if (isModiferState) {
     isReserved = this.querySelector("#" + workerSelected.firstname + "_" + workerSelected.lastname);
 
-    const siteId = sitesData.find(site => site.name === switchSiteSelected).id;
+    const site = sitesData.find(site => site.name === switchSiteSelected);
 
     const worker = workersData.find(worker => worker.firstname === workerSelected.firstname && worker.lastname === workerSelected.lastname);
     
     if (isReserved){
       this.style.backgroundColor = colorGray;
-      deleteReservation(worker.id, siteId, this.id);
+      deleteReservation(worker.id, site.id, this.id);
       isReserved.remove();
     }else{
       this.style.backgroundColor = colorGreen;
-      createReservation(worker.id, siteId, this.id);
+      createReservation(worker.id, site.id, this.id);
       const circle = document.createElement('div');
       circle.classList.add('circle'); // Ajoute la classe pour le style
 
@@ -256,19 +289,12 @@ function handleClick() {
   }
 }
 
-const weekLimit = 52;
-let currentWeek = 0;
-var dayRectangle = new Date();
-dayRectangle.setDate(dayRectangle.getDate()-7);
+// Création d'une semaine
 
-
-const weekContainer = document.getElementById("weekSelector");
-const createWeek = () => {
-
+function weekTemplate (){
   currentWeek += 1;
 
   dayRectangle.setDate((dayRectangle.getDate() - (dayRectangle.getDay() + 6) % 7)+7);
-
   var formattedDate = dayRectangle.getFullYear() + '-' +
     String(dayRectangle.getMonth() + 1).padStart(2, '0') + '-' +
     String(dayRectangle.getDate()).padStart(2, '0');
@@ -457,9 +483,15 @@ const createWeek = () => {
 
   // Ajouter l'élément principal dans le container (par exemple `body`)
   weekContainer.appendChild(mainDiv);
+}
+
+function createWeek () {
+
+  weekTemplate();
 
   const rectangles = document.querySelectorAll(".big_rectangle, .small_rectangle");
 
+  const modifierButton = document.getElementById('modifierButton');
   modifierButton.onclick = function() {
 
     const circles = document.querySelectorAll('.circle');
@@ -489,14 +521,14 @@ const createWeek = () => {
           element.style.backgroundColor = '#FFE371';
         }
       });
-      this.innerText = "M'enregistrer"
+      this.innerText = "Réserver"
     }
     isModiferState = !isModiferState;
   };
 
   rectangles.forEach(rect => {
-    rect.removeEventListener('click', handleClick);
-    rect.addEventListener('click', handleClick);
+    rect.removeEventListener('click', reservationClick);
+    rect.addEventListener('click', reservationClick);
   });
 
 
@@ -509,18 +541,15 @@ const createWeek = () => {
       var diffToMonday = (dayOfWeek + 6) % 7; // Trouver le décalage pour revenir à Lundi (si on est Dimanche, ce sera 6)
       weekRectangle.setDate(weekRectangle.getDate() - diffToMonday); // Revenir au lundi
 
-      // Ajouter les semaines en fonction de `currentWeek`
       weekRectangle.setDate(weekRectangle.getDate() + 7 * (currentWeek-1));
       weekRectangle = weekRectangle.getFullYear() + '-' +
       String(weekRectangle.getMonth() + 1).padStart(2, '0') + '-' +
       String(weekRectangle.getDate()).padStart(2, '0');
 
-      // Récupérer l'ID du site pour "Bureau Paris"
-
-      const sitesId = await getSitesId();
+      const sitesId = await getSites();
       const siteId = sitesId.find(site => site.name === switchSiteSelected).id;
 
-      const reservationParis = await APIrequest(BASE_URL + "/reservations/site/" + siteId + "/week?start_date=" + weekRectangle);
+      const reservationParis = await getWeekReservation(siteId, weekRectangle);
 
       const workers = await getWorkers();
                   
@@ -585,32 +614,21 @@ const createWeek = () => {
 
 };
 
+// Démarage de l'app
 
-const handleInfiniteScroll = () => {
-  const endOfScroll =
-  weekContainer.scrollLeft + 2 * weekContainer.clientWidth >= weekContainer.scrollWidth - 5; // Détecte la fin du scroll
+window.onload = async function () {
 
-  if (endOfScroll && currentWeek < weekLimit) {
-    createWeek();
-  }
+  weekTemplate();
 
-  if (currentWeek === weekLimit) {
-    removeInfiniteScroll();
-  }
-};
-weekContainer.addEventListener("scroll", handleInfiniteScroll);
+  await getSites();
+  await getWorkers();
 
-const removeInfiniteScroll = () => {
-  window.removeEventListener("scroll", handleInfiniteScroll);
-};
+  document.querySelectorAll('.main').forEach(e => e.remove());
+  currentWeek = 0;
+  dayRectangle = new Date();
+  dayRectangle.setDate(dayRectangle.getDate()-7);
 
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-
-createWeek();
-sleep(5000).then(() => {
+  createWeek();
   createWeek();
   createWeek(); 
-});
+};

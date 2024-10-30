@@ -8,6 +8,7 @@ CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
 
 # Fonction pour se connecter à la base de données PostgreSQL
+'''
 def get_db_connection():
     conn = psycopg2.connect(
         host="dpg-csdbse08fa8c73907000-a.frankfurt-postgres.render.com",
@@ -16,6 +17,16 @@ def get_db_connection():
         user="reservation_v1_user",
         password="oUWvegfUufKjyT21WRWpaRocf4fE1IWT",
         sslmode='require'
+    )
+    return conn
+'''
+
+def get_db_connection():
+    conn = psycopg2.connect(
+        host="localhost",  # Remplace par ton hôte de base de données
+        database="aymeric",  # Remplace par le nom de ta base
+        user="",  # Remplace par ton nom d'utilisateur PostgreSQL
+        password=""  # Remplace par ton mot de passe PostgreSQL
     )
     return conn
 
@@ -109,23 +120,27 @@ def create_reservation():
     conn = get_db_connection()
     cur = conn.cursor()
 
-    # Vérifier si une réservation existe déjà pour cet employé à cette date
+    # Vérifier si une réservation existe pour cet employé à cette date
     query = '''
-        SELECT *
-        FROM 
-            reservation
-        WHERE
-            worker_id = %s
-            AND date = %s
-    '''
-    cur.execute(query, (worker_id, date))
+            SELECT *
+            FROM 
+                reservation
+            WHERE
+                worker_id = %s
+                AND date = %s
+                AND site_id = %s
+        '''
+    
+    cur.execute(query, (worker_id, date, site_id))
     existing_reservation = cur.fetchone()
+
+    print(existing_reservation)
 
     if existing_reservation:
         cur.close()
         conn.close()
 
-        response = jsonify({"message": "Reservation already exists for this worker on this date"})
+        response = jsonify({"message": "Reservation doesn't already exists for this worker on this date"})
         response.headers.add('Access-Control-Allow-Origin', '*')
 
         return response, 400
