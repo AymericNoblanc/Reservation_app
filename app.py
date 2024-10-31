@@ -8,6 +8,8 @@ app = Flask(__name__)
 CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
 
+data = {}
+
 # Fonction pour se connecter à la base de données PostgreSQL
 def get_db_connection():
 
@@ -25,6 +27,7 @@ def get_db_connection():
 
 @app.route('/')
 def home():
+    print("254354")
     return render_template('reservation.html')
 
 #Route pour récupérer tous les travailleurs
@@ -486,13 +489,10 @@ def get_empty_days_for_site(site_id):
 
     return response
 
-data = {}
-
 # Lancer l'application Flask
 if __name__ == '__main__':
 
-    f = open('secret.json')
-    data = json.load(f)
+    with open('secret.json', 'r') as f:
+        data = json.load(f)
 
-    app.run(host=data.get("hostFlask"), debug=True)
-    #app.run(debug=True)
+    app.run(host=str(data.get("hostFlask")), debug=True)
