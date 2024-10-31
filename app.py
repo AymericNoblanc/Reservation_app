@@ -2,26 +2,31 @@ from flask import Flask, jsonify, request, render_template
 import psycopg2
 from datetime import datetime, timedelta
 from flask_cors import CORS
+import json
 
 app = Flask(__name__)
 CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
 
 # Fonction pour se connecter à la base de données PostgreSQL
-'''
-def get_db_connection():
-    conn = psycopg2.connect(
-        host="dpg-csdbse08fa8c73907000-a.frankfurt-postgres.render.com",
-        port='5432',
-        dbname="reservation_v1",
-        user="reservation_v1_user",
-        password="oUWvegfUufKjyT21WRWpaRocf4fE1IWT",
-        sslmode='require'
-    )
-    return conn
-'''
 
 def get_db_connection():
+    conn = psycopg2.connect(
+        host=data["host"],
+        port=data["port"],
+        dbname=data["dbname"],
+        user=data["user"],
+        password=data["password"],
+        sslmode=data["sslmode"]
+    )
+    return conn
+
+
+'''
+def get_db_connection():
+
+    print(data["host"])
+
     conn = psycopg2.connect(
         host="localhost",  # Remplace par ton hôte de base de données
         database="aymeric",  # Remplace par le nom de ta base
@@ -29,6 +34,7 @@ def get_db_connection():
         password=""  # Remplace par ton mot de passe PostgreSQL
     )
     return conn
+'''
 
 @app.route('/')
 def home():
@@ -491,8 +497,13 @@ def get_empty_days_for_site(site_id):
 
     return response
 
+data = []
 
 # Lancer l'application Flask
 if __name__ == '__main__':
+
+    f = open('secret.json')
+    data = json.load(f)
+
     app.run(host='192.168.1.8', debug=True)
     #app.run(debug=True)

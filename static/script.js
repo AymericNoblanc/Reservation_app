@@ -1,6 +1,4 @@
-const BASE_URL = "http://192.168.1.8:5000"
-//const BASE_URL = "http://127.0.0.1:5000"
-//const BASE_URL = "https://flask-hello-world-stb5.onrender.com"
+const BASE_URL = window.location.href;
 
 let switchSiteSelected = "Bureau Paris";
 
@@ -30,7 +28,7 @@ async function getSites() {
 
   try {
 
-    sitesData = await fetch(BASE_URL + "/sites"); // Appel de l'API
+    sitesData = await fetch(BASE_URL + "sites"); // Appel de l'API
     if (!sitesData.ok) {
       throw new Error('Erreur lors de la récupération des données');
     }
@@ -49,7 +47,7 @@ async function getWorkers() {
   }
 
   try {
-    workersData = await fetch(BASE_URL + "/workers"); // Appel de l'API
+    workersData = await fetch(BASE_URL + "workers"); // Appel de l'API
     if (!workersData.ok) {
       throw new Error('Erreur lors de la récupération des données');
     }
@@ -72,7 +70,7 @@ async function getWorkers() {
 
 async function getWeekReservation(siteId, date) {
   try {
-    const response = await fetch(BASE_URL + "/reservations/site/" + siteId + "/week?start_date=" + date);
+    const response = await fetch(BASE_URL + "reservations/site/" + siteId + "/week?start_date=" + date);
     if (!response.ok) {
       throw new Error('Erreur lors de la récupération des données');
     }
@@ -85,7 +83,7 @@ async function getWeekReservation(siteId, date) {
 }
 
 async function createReservation(workerId, siteId, date) {
-  const url = BASE_URL + "/reservations";
+  const url = BASE_URL + "reservations";
   
   const body = JSON.stringify({
     worker_id: workerId,
@@ -114,7 +112,7 @@ async function createReservation(workerId, siteId, date) {
 }
 
 async function deleteReservation(workerId, siteId, date) {
-  const url = BASE_URL + "/reservations";
+  const url = BASE_URL + "reservations";
   
   const body = JSON.stringify({
     worker_id: workerId,
