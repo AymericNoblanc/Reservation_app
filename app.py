@@ -9,7 +9,6 @@ CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
 
 # Fonction pour se connecter à la base de données PostgreSQL
-
 def get_db_connection():
     conn = psycopg2.connect(
         host=data["host"],
@@ -69,7 +68,8 @@ def get_sites():
     query = '''
         SELECT 
             id,
-            name
+            name,
+            display_name
         FROM 
             site
     '''
@@ -80,7 +80,8 @@ def get_sites():
     for row in rows:
         sites.append({
             "id": row[0],
-            "name": row[1]
+            "name": row[1],
+            "display_name": row[2]
         })
 
     cur.close()

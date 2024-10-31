@@ -1,6 +1,6 @@
 const BASE_URL = window.location.href;
 
-let switchSiteSelected = "Bureau Paris";
+let switchSiteSelected = null;
 
 let workerSelected = null;
 let workerSelectedNum = -1;
@@ -181,15 +181,29 @@ selectWorkerCircle.addEventListener("click", () => {
 
 // Gestion du slide des sites
 
-document.addEventListener('DOMContentLoaded', function() {
-  const firstSite = document.querySelector('.sites:nth-child(1)');
+function sitesSelection() {
+
+  switchSiteSelected = sitesData[0];
+
+  const navContainer = document.getElementById('navContainer');
+  navContainer.style.width = sitesData.length * 100 + 'px';
+
   const animation = document.querySelector('.animation');
+  animation.style.width = 100 - 6 + 'px'; 
 
-  // Sélectionner par défaut le premier élément
-  firstSite.classList.add('active');
-  animation.style.left = firstSite.getAttribute('data-target') + 'px';
-  animation.style.width = firstSite.offsetWidth - 6 + 'px'; // Largeur de l'élément sélectionné (enlever les marges)
-
+  sitesData.slice().reverse().forEach(function (site, index) {
+    index = sitesData.length - 1 - index;
+    const siteDiv = document.createElement("div");
+    siteDiv.classList.add("sites");
+    siteDiv.id = index;
+    siteDiv.textContent = site.display_name;
+    if (index === 0){
+      siteDiv.classList.add('active');
+      animation.style.left = siteDiv.id + 'px';
+    }
+    navContainer.insertBefore(siteDiv, navContainer.firstChild);
+  });
+  
   // Gérer les clics sur les autres éléments
   document.querySelectorAll('.sites').forEach(site => {
     site.addEventListener('click', function() {
@@ -200,9 +214,9 @@ document.addEventListener('DOMContentLoaded', function() {
       this.classList.add('active');
 
       // Déplacer l'animation
-      const targetLeft = this.getAttribute('data-target'); // Valeur "left" à partir de l'attribut data-target
+      const targetLeft = this.id * 100; // Valeur "left" à partir de l'attribut data-target
       animation.style.left = targetLeft + 'px';
-      animation.style.width = this.offsetWidth - 6 + 'px'; // Largeur de l'élément sélectionné (enlever les marges)
+      animation.style.width = 100 - 6 + 'px'; // Largeur de l'élément sélectionné (enlever les marges)
 
       document.querySelectorAll('.main').forEach(e => e.remove());
 
@@ -210,19 +224,16 @@ document.addEventListener('DOMContentLoaded', function() {
       dayRectangle = new Date();
       dayRectangle.setDate(dayRectangle.getDate()-7);
 
-      if (switchSiteSelected === "Bureau Paris"){
-        switchSiteSelected = "Bureau Lyon";
-      }else{
-        switchSiteSelected = "Bureau Paris";
-      }
+      switchSiteSelected = sitesData[this.id];
 
+      weekContainer.scrollLeft = 0;
       createWeek();
       createWeek();
       createWeek();   
     
     });
   });
-});
+};
 
 // Gestion du scroll entre les différentes semaines
 
@@ -245,17 +256,35 @@ function removeInfiniteScroll () {
   window.removeEventListener("scroll", handleInfiniteScroll);
 };
 
+// Gestion de l'ajout/enlevage d'une réservation
+
 function reservationClick() {
   if (isModiferState) {
     isReserved = this.querySelector("#" + workerSelected.firstname + "_" + workerSelected.lastname);
 
-    const site = sitesData.find(site => site.name === switchSiteSelected);
+    const site = sitesData.find(site => site.name === switchSiteSelected.name);
 
     const worker = workersData.find(worker => worker.firstname === workerSelected.firstname && worker.lastname === workerSelected.lastname);
     
+    reservationCircles = this.querySelectorAll(".circle");
+
     if (isReserved){
       this.style.backgroundColor = colorGray;
       deleteReservation(worker.id, site.id, this.id);
+
+      const leftPosition = isReserved.style.left;
+
+      reservationCircles.forEach(circle => {
+        if (circle.style.left > leftPosition){
+          if(circle.className.includes("big_rectangle")){
+            circle.style.left = circle.style.left.split('px')[0]-45 + 'px';
+          }else{
+            circle.style.left = circle.style.left.split('px')[0]-20 + 'px';
+          }
+        }
+
+      });
+      
       isReserved.remove();
     }else{
       this.style.backgroundColor = colorGreen;
@@ -263,7 +292,7 @@ function reservationClick() {
       const circle = document.createElement('div');
       circle.classList.add('circle'); // Ajoute la classe pour le style
 
-      var leftPosition = this.querySelectorAll(".circle").length;
+      var leftPosition = reservationCircles.length;
 
       if(this.className.includes("big_rectangle")){
         leftPosition = leftPosition * 45 + 15;
@@ -545,7 +574,7 @@ function createWeek () {
       String(weekRectangle.getDate()).padStart(2, '0');
 
       const sitesId = await getSites();
-      const siteId = sitesId.find(site => site.name === switchSiteSelected).id;
+      const siteId = sitesId.find(site => site.name === switchSiteSelected.name).id;
 
       const reservationParis = await getWeekReservation(siteId, weekRectangle);
 
@@ -620,6 +649,8 @@ window.onload = async function () {
 
   await getSites();
   await getWorkers();
+
+  sitesSelection();
 
   document.querySelectorAll('.main').forEach(e => e.remove());
   currentWeek = 0;
