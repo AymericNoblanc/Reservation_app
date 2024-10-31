@@ -483,7 +483,7 @@ def get_empty_days_for_site(site_id):
 
     return response
 
-data = []
+data = {}
 
 # Lancer l'application Flask
 if __name__ == '__main__':
