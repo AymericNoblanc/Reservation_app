@@ -9,7 +9,6 @@ CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
 
 # Fonction pour se connecter à la base de données PostgreSQL
-
 def get_db_connection():
     conn = psycopg2.connect(
         host=data["host"],
