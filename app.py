@@ -11,12 +11,12 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 # Fonction pour se connecter à la base de données PostgreSQL
 def get_db_connection():
     conn = psycopg2.connect(
-        host=data["host"],
-        port=data["port"],
-        dbname=data["dbname"],
-        user=data["user"],
-        password=data["password"],
-        sslmode=data["sslmode"]
+        host=data.get("host"),
+        port=data.get("port"),
+        dbname=data.get("dbname"),
+        user=data.get("user"),
+        password=data.get("password"),
+        sslmode=data.get("sslmode")
     )
     return conn
 
@@ -491,5 +491,5 @@ if __name__ == '__main__':
     f = open('secret.json')
     data = json.load(f)
 
-    app.run(host='192.168.1.8', debug=True)
+    app.run(host=data.get("hostFlask"), debug=True)
     #app.run(debug=True)
