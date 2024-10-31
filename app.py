@@ -21,21 +21,6 @@ def get_db_connection():
     )
     return conn
 
-
-'''
-def get_db_connection():
-
-    print(data["host"])
-
-    conn = psycopg2.connect(
-        host="localhost",  # Remplace par ton hôte de base de données
-        database="aymeric",  # Remplace par le nom de ta base
-        user="",  # Remplace par ton nom d'utilisateur PostgreSQL
-        password=""  # Remplace par ton mot de passe PostgreSQL
-    )
-    return conn
-'''
-
 @app.route('/')
 def home():
     return render_template('reservation.html')
