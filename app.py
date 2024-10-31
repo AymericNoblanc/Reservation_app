@@ -27,7 +27,6 @@ def get_db_connection():
 
 @app.route('/')
 def home():
-    print("254354")
     return render_template('reservation.html')
 
 #Route pour récupérer tous les travailleurs
@@ -131,8 +130,6 @@ def create_reservation():
     
     cur.execute(query, (worker_id, date, site_id))
     existing_reservation = cur.fetchone()
-
-    print(existing_reservation)
 
     if existing_reservation:
         cur.close()
@@ -493,6 +490,7 @@ def get_empty_days_for_site(site_id):
 if __name__ == '__main__':
 
     with open('secret.json', 'r') as f:
+        print("file here")
         data = json.load(f)
 
     app.run(host=str(data.get("hostFlask")), debug=True)
