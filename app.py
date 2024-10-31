@@ -68,7 +68,8 @@ def get_sites():
     query = '''
         SELECT 
             id,
-            name
+            name,
+            display_name
         FROM 
             site
     '''
@@ -79,7 +80,8 @@ def get_sites():
     for row in rows:
         sites.append({
             "id": row[0],
-            "name": row[1]
+            "name": row[1],
+            "display_name": row[2]
         })
 
     cur.close()
