@@ -4,6 +4,8 @@ from datetime import datetime, timedelta
 from flask_cors import CORS
 import json
 
+import os
+
 app = Flask(__name__)
 CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
@@ -13,7 +15,10 @@ data = {}
 # Fonction pour se connecter à la base de données PostgreSQL
 def get_db_connection():
 
-    print(data.get("host"),data.get("port"),data.get("dbname"),data.get("user"),data.get("password"),data.get("sslmode"))
+    print(data)
+
+    for file in os.listdir(""):
+        print(os.path.join("", file))
 
     conn = psycopg2.connect(
         host=data.get("host"),
@@ -489,10 +494,7 @@ def get_empty_days_for_site(site_id):
 # Lancer l'application Flask
 if __name__ == '__main__':
 
-    with open('/etc/secrets/secret.json', 'r') as f:
-        print("file here")
+    with open('secret.json', 'r') as f:
         data = json.load(f)
-
-    print(data)
 
     app.run(host=str(data.get("hostFlask")), debug=True)
