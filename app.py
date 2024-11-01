@@ -494,7 +494,7 @@ def get_empty_days_for_site(site_id):
 # Lancer l'application Flask
 if __name__ == '__main__':
 
-    with open('secret.json', 'r') as f:
+    with open('/opt/render/project/src/secret.json', 'r') as f:
         data = json.load(f)
 
     app.run(host=str(data.get("hostFlask")), debug=True)
