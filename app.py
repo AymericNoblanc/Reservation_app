@@ -17,8 +17,8 @@ def get_db_connection():
 
     print(data)
 
-    for file in os.listdir(""):
-        print(os.path.join("", file))
+    for file in os.listdir("/opt/render/project/src/"):
+        print(os.path.join("/opt/render/project/src/", file))
 
     conn = psycopg2.connect(
         host=data.get("host"),
