@@ -347,6 +347,10 @@ function weekTemplate (){
     bigRectangle.style.backgroundColor = colorGray;
   }
 
+  bigRectangle.addEventListener("click", () => {
+    bigRectangle.style.height = '400px';
+  });
+
   // Créer le jour de la semaine
   const lundi = document.createElement("p");
   lundi.classList.add("dayOfTheWeek");
