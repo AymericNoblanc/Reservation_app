@@ -33,7 +33,7 @@ def home():
     return render_template('reservation.html')
 
 @app.route('/healthcheck')
-def home():
+def healthcheck():
     return ('', 204)
 
 #Route pour récupérer tous les travailleurs
