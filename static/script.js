@@ -257,6 +257,41 @@ function removeInfiniteScroll () {
 };
 
 // Gestion de l'ajout/enlevage d'une réservation
+/*
+const modifierButton = document.getElementById('modifierButton');
+modifierButton.onclick = function() {
+
+  const circles = document.querySelectorAll('.circle');
+
+  circles.forEach(circle => {
+    if (circle.style.display === 'none') {
+      circle.style.display = 'flex';
+    } else {
+      circle.style.display = 'none';
+    }
+  });
+
+  if (!isModiferState) {
+    rectangles.forEach((element) => {
+      if(element.querySelector("#" + workerSelected.firstname + "_" + workerSelected.lastname)){
+        element.style.backgroundColor = colorGreen;
+      }else{
+        element.style.backgroundColor = colorGray;
+      }
+    });
+    this.innerText = 'Sauvegarder'
+  }else {
+    rectangles.forEach((element) => {
+      if (element.classList.contains('activeWeek')){
+        element.style.backgroundColor = '#93DDFF';
+      }else{
+        element.style.backgroundColor = '#FFE371';
+      }
+    });
+    this.innerText = "Réserver"
+  }
+  isModiferState = !isModiferState;
+};*/
 
 function reservationClick() {
   if (isModiferState) {
@@ -272,14 +307,15 @@ function reservationClick() {
       this.style.backgroundColor = colorGray;
       deleteReservation(worker.id, site.id, this.id);
 
-      const leftPosition = isReserved.style.left;
+      const leftPosition = Number(isReserved.style.left.split('px')[0]);
 
       reservationCircles.forEach(circle => {
-        if (circle.style.left > leftPosition){
-          if(circle.className.includes("big_rectangle")){
-            circle.style.left = circle.style.left.split('px')[0]-45 + 'px';
+        const circleLeftPosition = Number(circle.style.left.split('px')[0]);
+        if (circleLeftPosition > leftPosition){
+          if(this.className.includes("big_rectangle")){
+            circle.style.left = circleLeftPosition-45 + 'px';
           }else{
-            circle.style.left = circle.style.left.split('px')[0]-20 + 'px';
+            circle.style.left = circleLeftPosition-20 + 'px';
           }
         }
 
@@ -312,6 +348,18 @@ function reservationClick() {
 
       // Ajouter le cercle au rectangle
       this.appendChild(circle);
+    }
+  }else{
+    if (this.id === '2024-11-05'){
+      this.style.height = '320px';
+      this.style.width= '320px';
+      this.style.zIndex = "1";
+      this.style.position = "relative";
+    }else if ((this.id === '2024-11-07') || (this.id === '2024-11-08')){
+      this.style.zIndex = "0";
+      this.style.position = "relative";
+    }else{
+      this.style.display = 'none';
     }
   }
 }
@@ -346,10 +394,6 @@ function weekTemplate (){
   if (isModiferState){
     bigRectangle.style.backgroundColor = colorGray;
   }
-
-  bigRectangle.addEventListener("click", () => {
-    bigRectangle.style.height = '400px';
-  });
 
   // Créer le jour de la semaine
   const lundi = document.createElement("p");
@@ -522,11 +566,16 @@ function createWeek () {
 
   const rectangles = document.querySelectorAll(".big_rectangle, .small_rectangle");
 
+  rectangles.forEach(rect => {
+    rect.removeEventListener('click', reservationClick);
+    rect.addEventListener('click', reservationClick);
+  });
+
   const modifierButton = document.getElementById('modifierButton');
   modifierButton.onclick = function() {
-
+  
     const circles = document.querySelectorAll('.circle');
-
+  
     circles.forEach(circle => {
       if (circle.style.display === 'none') {
         circle.style.display = 'flex';
@@ -534,7 +583,7 @@ function createWeek () {
         circle.style.display = 'none';
       }
     });
-
+  
     if (!isModiferState) {
       rectangles.forEach((element) => {
         if(element.querySelector("#" + workerSelected.firstname + "_" + workerSelected.lastname)){
@@ -556,13 +605,6 @@ function createWeek () {
     }
     isModiferState = !isModiferState;
   };
-
-  rectangles.forEach(rect => {
-    rect.removeEventListener('click', reservationClick);
-    rect.addEventListener('click', reservationClick);
-  });
-
-
 
   async function fetchReservationsForParis() {
     try {
