@@ -339,8 +339,30 @@ function modifierButtonFunction() {
 
 function reservationClick() {
   function lookupRectangleClick() {
-    this.remove();
-    weekContainer.style.pointerEvents = 'auto';
+
+    const formerRectangle = weekContainer.querySelector(`[id='${lookupRectangle.id}']`);
+
+    lookupRectangle.style.boxShadow = '0 0 0 0';
+
+    const jour = lookupRectangle.querySelector(".dayOfTheWeek");
+    jour.style.animation = 'none';
+    jour.offsetHeight;
+    jour.style.animation = 'growDayOfTheWeek 0.5s ease-in reverse';
+
+    const jourNum = lookupRectangle.querySelector(".dayNum");
+    jourNum.style.animation = 'none';
+    jourNum.offsetHeight;
+    jourNum.style.animation = 'growDayNum 0.5s ease-in reverse';
+
+    lookupRectangle.style.left = `${formerRectangle.getBoundingClientRect().left}px`;
+    lookupRectangle.style.top = `${formerRectangle.getBoundingClientRect().top}px`;
+    lookupRectangle.style.width = `${formerRectangle.getBoundingClientRect().width}px`;
+    lookupRectangle.style.height = `${formerRectangle.getBoundingClientRect().height}px`;
+
+    setTimeout(() => {
+      this.remove();
+      weekContainer.style.pointerEvents = 'auto';
+    }, 475)
   }
 
   if (isModiferState) {
@@ -390,6 +412,7 @@ function reservationClick() {
     const jour = document.createElement("p");
     jour.classList.add("dayOfTheWeek");
     jour.textContent = this.querySelector(".dayOfTheWeek").textContent;
+    jour.style.animation = 'growDayOfTheWeek 0.5s ease-out'
 
     lookupRectangle.appendChild(jour);
 
@@ -397,6 +420,7 @@ function reservationClick() {
     const jourNum = document.createElement("p");
     jourNum.classList.add("dayNum");
     jourNum.textContent = this.querySelector(".dayNum").textContent;
+    jourNum.style.animation = 'growDayNum 0.5s ease-out'
 
     lookupRectangle.id = this.id;
     lookupRectangle.appendChild(jourNum);
@@ -427,6 +451,7 @@ function reservationClick() {
     setTimeout(() => {
       lookupRectangle.style.height = '400px';
       lookupRectangle.style.width = '320px';
+
       if (this.querySelector(".dayOfTheWeek").textContent === 'Lundi') {
         lookupRectangle.style.top = `${this.getBoundingClientRect().top + 15}px`; // Adjust left position
       }else if (this.querySelector(".dayOfTheWeek").textContent === 'Mardi') {
@@ -440,6 +465,14 @@ function reservationClick() {
         lookupRectangle.style.left = `${this.getBoundingClientRect().left - 170}px`; // Adjust left position
         lookupRectangle.style.top = `${this.getBoundingClientRect().top - 285}px`; // Adjust left position
       }
+
+      jour.style.fontSize = '32px';
+      jour.style.marginLeft = '3vh';
+
+      jourNum.style.fontSize = '20px';
+      jourNum.style.marginTop = '6.5vh';
+      jourNum.style.marginLeft = '5vh';
+
       }, 1)
 
   }
