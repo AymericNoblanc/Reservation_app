@@ -7,6 +7,7 @@ let workerSelectedNum = -1;
 
 let sitesData = null;
 let workersData = null;
+let reservationData = null;
 
 let isModiferState = false;
 
@@ -15,7 +16,7 @@ const colorGray = '#E5E5E5';
 
 const weekLimit = 52;
 let currentWeek = 0;
-var dayRectangle = new Date();
+let dayRectangle = new Date();
 dayRectangle.setDate(dayRectangle.getDate()-7);
 
 // API call :
@@ -75,7 +76,17 @@ async function getWeekReservation(siteId, date) {
       throw new Error('Erreur lors de la récupération des données');
     }
     const data = await response.json();
-    return data
+
+    reservationData = { ...reservationData };
+
+    for (const key in data) {
+      const newKey = key + date; // Add a suffix to the new key
+      reservationData[newKey] = data[key];
+    }
+
+    reservationData = Object.values({ ...reservationData});
+
+
 
   } catch (error) {
     console.error('Erreur:', error);
@@ -219,6 +230,7 @@ function sitesSelection() {
       animation.style.width = 100 - 6 + 'px'; // Largeur de l'élément sélectionné (enlever les marges)
 
       document.querySelectorAll('.main').forEach(e => e.remove());
+      reservationData = null;
 
       currentWeek = 0;
       dayRectangle = new Date();
@@ -233,7 +245,7 @@ function sitesSelection() {
     
     });
   });
-};
+}
 
 // Gestion du scroll entre les différentes semaines
 
@@ -249,16 +261,88 @@ function handleInfiniteScroll () {
   if (currentWeek === weekLimit) {
     removeInfiniteScroll();
   }
-};
+}
 weekContainer.addEventListener("scroll", handleInfiniteScroll);
 
 function removeInfiniteScroll () {
   window.removeEventListener("scroll", handleInfiniteScroll);
-};
+}
+
+// Création d'éléments
+
+function createReservationCircle(worker, rectangle) {
+  const circle = document.createElement('div');
+  circle.classList.add('circle'); // Ajoute la classe pour le style
+
+  let leftPosition = rectangle.querySelectorAll(".circle").length;
+
+  if(rectangle.className.includes("big_rectangle")){
+    leftPosition = leftPosition * 45 + 15;
+  }else{
+    leftPosition = leftPosition * 20 + 15;
+  }
+
+  // Appliquer la position gauche (left) au cercle pour le décaler
+  circle.style.left = `${leftPosition}px`;
+  circle.textContent = worker.firstname[0] + worker.lastname[0];
+
+  if (worker.firstname === workerSelected.firstname && worker.lastname === workerSelected.lastname) {
+    circle.classList.add('circle-inner-border');
+    if (isModiferState){
+      rectangle.style.backgroundColor = colorGreen;
+    }
+  }
+
+  circle.style.backgroundColor = worker.color;
+  circle.id = worker.firstname + "_" + worker.lastname;
+
+  return circle;
+}
 
 // Gestion de l'ajout/enlevage d'une réservation
 
+function modifierButtonFunction() {
+
+  const circles = document.querySelectorAll('.circle');
+
+  const rectangles = document.querySelectorAll(".big_rectangle, .small_rectangle");
+
+  circles.forEach(circle => {
+    if (circle.style.display === 'none') {
+      circle.style.display = 'flex';
+    } else {
+      circle.style.display = 'none';
+    }
+  });
+
+  if (!isModiferState) {
+    rectangles.forEach((element) => {
+      if(element.querySelector("#" + workerSelected.firstname + "_" + workerSelected.lastname)){
+        element.style.backgroundColor = colorGreen;
+      }else{
+        element.style.backgroundColor = colorGray;
+      }
+    });
+    this.innerText = 'Sauvegarder'
+  }else {
+    rectangles.forEach((element) => {
+      if (element.classList.contains('activeWeek')){
+        element.style.backgroundColor = '#93DDFF';
+      }else{
+        element.style.backgroundColor = '#FFE371';
+      }
+    });
+    this.innerText = "Réserver"
+  }
+  isModiferState = !isModiferState;
+}
+
 function reservationClick() {
+  function lookupRectangleClick() {
+    this.remove();
+    weekContainer.style.pointerEvents = 'auto';
+  }
+
   if (isModiferState) {
     isReserved = this.querySelector("#" + workerSelected.firstname + "_" + workerSelected.lastname);
 
@@ -272,14 +356,15 @@ function reservationClick() {
       this.style.backgroundColor = colorGray;
       deleteReservation(worker.id, site.id, this.id);
 
-      const leftPosition = isReserved.style.left;
+      const leftPosition = Number(isReserved.style.left.split('px')[0]);
 
       reservationCircles.forEach(circle => {
-        if (circle.style.left > leftPosition){
-          if(circle.className.includes("big_rectangle")){
-            circle.style.left = circle.style.left.split('px')[0]-45 + 'px';
+        const circleLeftPosition = Number(circle.style.left.split('px')[0]);
+        if (circleLeftPosition > leftPosition){
+          if(this.className.includes("big_rectangle")){
+            circle.style.left = circleLeftPosition-45 + 'px';
           }else{
-            circle.style.left = circle.style.left.split('px')[0]-20 + 'px';
+            circle.style.left = circleLeftPosition-20 + 'px';
           }
         }
 
@@ -287,32 +372,76 @@ function reservationClick() {
       
       isReserved.remove();
     }else{
-      this.style.backgroundColor = colorGreen;
       createReservation(worker.id, site.id, this.id);
-      const circle = document.createElement('div');
-      circle.classList.add('circle'); // Ajoute la classe pour le style
-
-      var leftPosition = reservationCircles.length;
-
-      if(this.className.includes("big_rectangle")){
-        leftPosition = leftPosition * 45 + 15;
-      }else{
-        leftPosition = leftPosition * 20 + 15;
-      }
-
-      // Appliquer la position gauche (left) au cercle pour le décaler
-      circle.style.left = `${leftPosition}px`;
-      circle.textContent = worker.firstname[0] + worker.lastname[0];
-      circle.classList.add('circle-inner-border');
-
-      circle.style.backgroundColor = worker.color;
-      circle.id = worker.firstname + "_" + worker.lastname;
+      const circle = createReservationCircle(worker, this);
 
       circle.style.display = 'none';
 
       // Ajouter le cercle au rectangle
       this.appendChild(circle);
     }
+  }else{
+
+    lookupRectangle = document.createElement("div");
+    lookupRectangle.classList.add("lookup_rectangle");
+    lookupRectangle.classList.add(this.className.split(' ')[0]);
+
+    // Créer le jour de la semaine
+    const jour = document.createElement("p");
+    jour.classList.add("dayOfTheWeek");
+    jour.textContent = this.querySelector(".dayOfTheWeek").textContent;
+
+    lookupRectangle.appendChild(jour);
+
+    // Créer la date
+    const jourNum = document.createElement("p");
+    jourNum.classList.add("dayNum");
+    jourNum.textContent = this.querySelector(".dayNum").textContent;
+
+    lookupRectangle.id = this.id;
+    lookupRectangle.appendChild(jourNum);
+
+    document.body.appendChild(lookupRectangle);
+
+    lookupRectangle.style.position = 'absolute';
+    lookupRectangle.style.left = `${this.getBoundingClientRect().left}px`;
+    lookupRectangle.style.top = `${this.getBoundingClientRect().top}px`;
+    lookupRectangle.style.width = `${this.getBoundingClientRect().width}px`;
+    lookupRectangle.style.height = `${this.getBoundingClientRect().height}px`;
+
+    lookupRectangle.addEventListener('click', lookupRectangleClick);
+
+    weekContainer.style.pointerEvents = 'none';
+
+    reservationData.forEach(reservation => {
+      if (reservation.date === this.id) {
+
+        // Créer un div pour le cercle
+        const circle = createReservationCircle(workersData.find(worker => worker.id === reservation.worker_id), lookupRectangle);
+
+        // Ajouter le cercle au rectangle
+        lookupRectangle.appendChild(circle);
+      }
+    });
+
+    setTimeout(() => {
+      lookupRectangle.style.height = '400px';
+      lookupRectangle.style.width = '320px';
+      if (this.querySelector(".dayOfTheWeek").textContent === 'Lundi') {
+        lookupRectangle.style.top = `${this.getBoundingClientRect().top + 15}px`; // Adjust left position
+      }else if (this.querySelector(".dayOfTheWeek").textContent === 'Mardi') {
+        lookupRectangle.style.top = `${this.getBoundingClientRect().top - 135}px`; // Adjust left position
+      }else if (this.querySelector(".dayOfTheWeek").textContent === 'Mercredi') {
+        lookupRectangle.style.left = `${this.getBoundingClientRect().left - 170}px`; // Adjust left position
+        lookupRectangle.style.top = `${this.getBoundingClientRect().top - 135}px`; // Adjust left position
+      }else if (this.querySelector(".dayOfTheWeek").textContent === 'Jeudi') {
+        lookupRectangle.style.top = `${this.getBoundingClientRect().top - 285}px`; // Adjust left position
+      }else if (this.querySelector(".dayOfTheWeek").textContent === 'Vendredi') {
+        lookupRectangle.style.left = `${this.getBoundingClientRect().left - 170}px`; // Adjust left position
+        lookupRectangle.style.top = `${this.getBoundingClientRect().top - 285}px`; // Adjust left position
+      }
+      }, 1)
+
   }
 }
 
@@ -322,9 +451,7 @@ function weekTemplate (){
   currentWeek += 1;
 
   dayRectangle.setDate((dayRectangle.getDate() - (dayRectangle.getDay() + 6) % 7)+7);
-  var formattedDate = dayRectangle.getFullYear() + '-' +
-    String(dayRectangle.getMonth() + 1).padStart(2, '0') + '-' +
-    String(dayRectangle.getDate()).padStart(2, '0');
+  let formattedDate;
 
   // Créer l'élément principal contenant la semaine et les rectangles
   const mainDiv = document.createElement("div");
@@ -342,7 +469,7 @@ function weekTemplate (){
   // Créer le grand rectangle
   const bigRectangle = document.createElement("div");
   bigRectangle.classList.add("big_rectangle");
-  if (currentWeek == 1){bigRectangle.classList.add("activeWeek");}
+  if (currentWeek === 1){bigRectangle.classList.add("activeWeek");}
   if (isModiferState){
     bigRectangle.style.backgroundColor = colorGray;
   }
@@ -377,7 +504,7 @@ function weekTemplate (){
   // Petits rectangles dans la ligne du haut
   const smallRectangle1 = document.createElement("div");
   smallRectangle1.classList.add("small_rectangle");
-  if (currentWeek == 1){smallRectangle1.classList.add("activeWeek");}
+  if (currentWeek === 1){smallRectangle1.classList.add("activeWeek");}
   if (isModiferState){
     smallRectangle1.style.backgroundColor = colorGray;
   }
@@ -404,7 +531,7 @@ function weekTemplate (){
 
   const smallRectangle2 = document.createElement("div");
   smallRectangle2.classList.add("small_rectangle");
-  if (currentWeek == 1){smallRectangle2.classList.add("activeWeek");}
+  if (currentWeek === 1){smallRectangle2.classList.add("activeWeek");}
   if (isModiferState){
     smallRectangle2.style.backgroundColor = colorGray;
   }
@@ -440,7 +567,7 @@ function weekTemplate (){
   // Petits rectangles dans la ligne du bas
   const smallRectangle3 = document.createElement("div");
   smallRectangle3.classList.add("small_rectangle");
-  if (currentWeek == 1){smallRectangle3.classList.add("activeWeek");}
+  if (currentWeek === 1){smallRectangle3.classList.add("activeWeek");}
   if (isModiferState){
     smallRectangle3.style.backgroundColor = colorGray;
   }
@@ -467,7 +594,7 @@ function weekTemplate (){
 
   const smallRectangle4 = document.createElement("div");
   smallRectangle4.classList.add("small_rectangle");
-  if (currentWeek == 1){smallRectangle4.classList.add("activeWeek");}
+  if (currentWeek === 1){smallRectangle4.classList.add("activeWeek");}
   if (isModiferState){
     smallRectangle4.style.backgroundColor = colorGray;
   }
@@ -510,138 +637,71 @@ function weekTemplate (){
 
   // Ajouter l'élément principal dans le container (par exemple `body`)
   weekContainer.appendChild(mainDiv);
+
+  return mainDiv;
+}
+
+async function fetchReservations(allRectanglesInCreation) {
+  try {
+
+    let weekRectangle = new Date();
+    let dayOfWeek = weekRectangle.getDay(); // 0 = Dimanche, 1 = Lundi, etc.
+    let diffToMonday = (dayOfWeek + 6) % 7; // Trouver le décalage pour revenir à lundi (si on est dimanche, ce sera 6)
+    weekRectangle.setDate(weekRectangle.getDate() - diffToMonday); // Revenir au lundi
+
+    weekRectangle.setDate(weekRectangle.getDate() + 7 * (currentWeek-1));
+    weekRectangle = weekRectangle.getFullYear() + '-' +
+        String(weekRectangle.getMonth() + 1).padStart(2, '0') + '-' +
+        String(weekRectangle.getDate()).padStart(2, '0');
+
+    const sitesId = await getSites();
+    const siteId = sitesId.find(site => site.name === switchSiteSelected.name).id;
+
+    await getWeekReservation(siteId, weekRectangle);
+
+    const workers = await getWorkers();
+
+    reservationData.forEach(reservation => {
+      allRectanglesInCreation.forEach(rectangle => {
+        if (reservation.date === rectangle.id) {
+
+          // Créer un div pour le cercle
+          const circle = createReservationCircle(workers.find(worker => worker.id === reservation.worker_id), rectangle);
+
+          if (isModiferState) {
+            circle.style.display = 'none';
+          }
+
+          // Ajouter le cercle au rectangle
+          rectangle.appendChild(circle);
+        }
+      });
+    });
+
+  } catch (error) {
+    console.error('Erreur:', error); // Gestion des erreurs
+  }
 }
 
 function createWeek () {
 
-  weekTemplate();
+  const mainDiv = weekTemplate();
 
-  const rectangles = document.querySelectorAll(".big_rectangle, .small_rectangle");
+  const allRectanglesInCreation = mainDiv.querySelectorAll(".big_rectangle, .small_rectangle");
 
-  const modifierButton = document.getElementById('modifierButton');
-  modifierButton.onclick = function() {
-
-    const circles = document.querySelectorAll('.circle');
-
-    circles.forEach(circle => {
-      if (circle.style.display === 'none') {
-        circle.style.display = 'flex';
-      } else {
-        circle.style.display = 'none';
-      }
-    });
-
-    if (!isModiferState) {
-      rectangles.forEach((element) => {
-        if(element.querySelector("#" + workerSelected.firstname + "_" + workerSelected.lastname)){
-          element.style.backgroundColor = colorGreen;
-        }else{
-          element.style.backgroundColor = colorGray;
-        }
-      });
-      this.innerText = 'Sauvegarder'
-    }else {
-      rectangles.forEach((element) => {
-        if (element.classList.contains('activeWeek')){
-          element.style.backgroundColor = '#93DDFF';
-        }else{
-          element.style.backgroundColor = '#FFE371';
-        }
-      });
-      this.innerText = "Réserver"
-    }
-    isModiferState = !isModiferState;
-  };
-
-  rectangles.forEach(rect => {
+  allRectanglesInCreation.forEach(rect => {
     rect.removeEventListener('click', reservationClick);
     rect.addEventListener('click', reservationClick);
   });
 
+  const modifierButton = document.getElementById('modifierButton');
+  modifierButton.onclick = function() {modifierButtonFunction()};
 
+  fetchReservations(allRectanglesInCreation);
 
-  async function fetchReservationsForParis() {
-    try {
+}
 
-      var weekRectangle = new Date();
-      var dayOfWeek = weekRectangle.getDay(); // 0 = Dimanche, 1 = Lundi, etc.
-      var diffToMonday = (dayOfWeek + 6) % 7; // Trouver le décalage pour revenir à Lundi (si on est Dimanche, ce sera 6)
-      weekRectangle.setDate(weekRectangle.getDate() - diffToMonday); // Revenir au lundi
-
-      weekRectangle.setDate(weekRectangle.getDate() + 7 * (currentWeek-1));
-      weekRectangle = weekRectangle.getFullYear() + '-' +
-      String(weekRectangle.getMonth() + 1).padStart(2, '0') + '-' +
-      String(weekRectangle.getDate()).padStart(2, '0');
-
-      const sitesId = await getSites();
-      const siteId = sitesId.find(site => site.name === switchSiteSelected.name).id;
-
-      const reservationParis = await getWeekReservation(siteId, weekRectangle);
-
-      const workers = await getWorkers();
-                  
-      const circleCountByDate = {};
-
-      reservationParis.forEach(reservation => {
-        rectangles.forEach(rectangle => {
-          if (reservation.date === rectangle.id) {
-
-            // Créer un div pour le cercle
-            const circle = document.createElement('div');
-            circle.classList.add('circle'); // Ajoute la classe pour le style
-
-            if (!circleCountByDate[reservation.date]) {
-              circleCountByDate[reservation.date] = 0; // Initialiser à 0 si pas encore de cercles
-            }
-      
-            var leftPosition = null;
-
-            if(rectangle.className.includes("big_rectangle")){
-              leftPosition = circleCountByDate[reservation.date] * 45 + 15;
-            }else{
-              leftPosition = circleCountByDate[reservation.date] * 20 + 15;
-            }
-
-            // Appliquer la position gauche (left) au cercle pour le décaler
-            circle.style.left = `${leftPosition}px`;
-            const worker = workers.find(worker => worker.id === reservation.worker_id);
-            circle.textContent = worker.firstname[0] + worker.lastname[0];
-
-            if (worker.firstname === workerSelected.firstname && worker.lastname === workerSelected.lastname) {
-              circle.classList.add('circle-inner-border');
-              if (isModiferState){
-                rectangle.style.backgroundColor = colorGreen;
-              }
-            }
-
-            circle.style.backgroundColor = worker.color;
-
-            circle.id = worker.firstname + "_" + worker.lastname;
-
-            if (isModiferState) {
-              circle.style.display = 'none';
-            }
-
-            // Incrémenter le compteur de cercles pour cette date
-            circleCountByDate[reservation.date] += 1;
-
-            // Ajouter le cercle au rectangle
-            rectangle.appendChild(circle);
-          }
-        });
-      });
-      
-    } catch (error) {
-      console.error('Erreur:', error); // Gestion des erreurs
-    }
-  }
-
-
-  fetchReservationsForParis();
-
-};
-
-// Démarage de l'app
+// Démarrage de l'app
 
 window.onload = async function () {
 
