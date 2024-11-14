@@ -409,7 +409,7 @@ function reservationClick() {
     lookupRectangle.classList.add(this.className.split(' ')[0]);
 
     // Créer le jour de la semaine
-    const jour = document.createElement("p");
+    const jour = document.createElement("div");
     jour.classList.add("dayOfTheWeek");
     jour.textContent = this.querySelector(".dayOfTheWeek").textContent;
     jour.style.animation = 'growDayOfTheWeek 0.5s ease-out'
@@ -417,7 +417,7 @@ function reservationClick() {
     lookupRectangle.appendChild(jour);
 
     // Créer la date
-    const jourNum = document.createElement("p");
+    const jourNum = document.createElement("div");
     jourNum.classList.add("dayNum");
     jourNum.textContent = this.querySelector(".dayNum").textContent;
     jourNum.style.animation = 'growDayNum 0.5s ease-out'
