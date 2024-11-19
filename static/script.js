@@ -293,7 +293,6 @@ function createRectangle(classes, dayOfWeek) {
 
   const rectangle = document.createElement("div");
   classes.forEach(cls => rectangle.classList.add(cls));
-  if (currentWeek === 1) rectangle.classList.add("activeWeek");
   if (isModiferState) rectangle.style.backgroundColor = colorGray;
 
   const dayElement = document.createElement("p");
@@ -355,13 +354,6 @@ function modifierButtonFunction() {
     });
     modifierButton.textContent = 'Sauvegarder';
   }else {
-    rectangles.forEach((element) => {
-      if (element.classList.contains('activeWeek')){
-        element.style.backgroundColor = '#93DDFF';
-      }else{
-        element.style.backgroundColor = '#FFE371';
-      }
-    });
     modifierButton.textContent = "Réserver";
   }
   isModiferState = !isModiferState;

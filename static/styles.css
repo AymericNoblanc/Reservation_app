@@ -167,10 +167,6 @@ nav .animation {
   margin-top: 10px;
 }
 
-.activeWeek{
-  background-color: #93DDFF;
-}
-
 .dayOfTheWeek{
   position: absolute;
   font-family: Arial, sans-serif;
