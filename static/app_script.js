@@ -1,4 +1,4 @@
-const BASE_URL = window.location.href;
+const BASE_URL = URLformator(window.location.href);
 
 let switchSiteSelected = null;
 
@@ -15,6 +15,14 @@ let dayRectangle = new Date();
 dayRectangle.setDate(dayRectangle.getDate()-7);
 
 // API call :
+
+function URLformator(str) {
+  const lastSlashIndex = str.lastIndexOf('/');
+  if (lastSlashIndex !== -1) {
+    return str.substring(0, lastSlashIndex + 1); // Inclut le dernier '/'
+  }
+  return str; // Si aucun '/' n'est trouvé, retourne la chaîne entière
+}
 
 async function getSites() {
   if (sitesData) {
@@ -142,11 +150,11 @@ selectUserCircle.addEventListener("click", () => {
 
 // Gestion du slide des sites
 
+const navContainer = document.getElementById('navContainer');
 function sitesSelection() {
 
   switchSiteSelected = sitesData[0];
 
-  const navContainer = document.getElementById('navContainer');
   navContainer.style.width = sitesData.length * 100 + 'px';
 
   const animation = document.querySelector('.animation');
@@ -196,6 +204,12 @@ function sitesSelection() {
     });
   });
 }
+
+// Désactivation du zoom sur mobile
+
+document.addEventListener('gesturestart', function (e) {
+  e.preventDefault();
+});
 
 // Gestion du scroll entre les différentes semaines
 
@@ -298,52 +312,55 @@ function createNumMoreResa(rectangle, resaRectangle, maxResa) {
 
 // Gestion de l'ajout/enlevage d'une réservation
 
+let lookupRectangle;
+function lookupRectangleClick() {
+
+  const overlay = document.getElementById('overlay');
+  overlay.remove();
+
+  const formerRectangle = weekContainer.querySelector(`[id='${lookupRectangle.id}']`);
+
+  lookupRectangle.style.boxShadow = '0 0 0 0';
+
+  const jour = lookupRectangle.querySelector(".dayOfTheWeek");
+  jour.style.animation = 'none';
+  jour.offsetHeight;
+  jour.style.animation = 'growDayOfTheWeek 0.3s ease-in reverse';
+
+  const jourNum = lookupRectangle.querySelector(".dayNum");
+  jourNum.style.animation = 'none';
+  jourNum.offsetHeight;
+  jourNum.style.animation = 'growDayNum 0.3s ease-in reverse';
+
+  lookupRectangle.style.left = `${formerRectangle.getBoundingClientRect().left}px`;
+  lookupRectangle.style.top = `${formerRectangle.getBoundingClientRect().top}px`;
+  lookupRectangle.style.width = `${formerRectangle.getBoundingClientRect().width}px`;
+  lookupRectangle.style.height = `${formerRectangle.getBoundingClientRect().height}px`;
+
+  const lookupRectangleNames = lookupRectangle.querySelectorAll(".lookup_list_name");
+  lookupRectangleNames.forEach(name => {
+    name.style.animation = 'none';
+    name.offsetHeight;
+    name.style.animation = 'growlookup_list_name 0.3s ease-in reverse';
+    name.style.color = 'rgb(71, 71, 71, 0)';
+  })
+
+  const lookupRectangleList = lookupRectangle.querySelector(".lookup_list");
+  lookupRectangleList.style.marginTop = "22%";
+
+  const lookupRectangleCircle = lookupRectangle.querySelectorAll(".circle");
+  lookupRectangleCircle.forEach(circle => {
+    circle.remove();
+  })
+
+
+  setTimeout(() => {
+    lookupRectangle.remove();
+    weekContainer.style.pointerEvents = 'auto';
+  }, 300)
+}
+
 function lookupClick(event) {
-  function lookupRectangleClick() {
-
-    const formerRectangle = weekContainer.querySelector(`[id='${lookupRectangle.id}']`);
-
-    lookupRectangle.style.boxShadow = '0 0 0 0';
-
-    const jour = lookupRectangle.querySelector(".dayOfTheWeek");
-    jour.style.animation = 'none';
-    jour.offsetHeight;
-    jour.style.animation = 'growDayOfTheWeek 0.3s ease-in reverse';
-
-    const jourNum = lookupRectangle.querySelector(".dayNum");
-    jourNum.style.animation = 'none';
-    jourNum.offsetHeight;
-    jourNum.style.animation = 'growDayNum 0.3s ease-in reverse';
-
-    lookupRectangle.style.left = `${formerRectangle.getBoundingClientRect().left}px`;
-    lookupRectangle.style.top = `${formerRectangle.getBoundingClientRect().top}px`;
-    lookupRectangle.style.width = `${formerRectangle.getBoundingClientRect().width}px`;
-    lookupRectangle.style.height = `${formerRectangle.getBoundingClientRect().height}px`;
-
-    const lookupRectangleNames = lookupRectangle.querySelectorAll(".lookup_list_name");
-    lookupRectangleNames.forEach(name => {
-      name.style.animation = 'none';
-      name.offsetHeight;
-      name.style.animation = 'growlookup_list_name 0.3s ease-in reverse';
-      name.style.color = 'rgb(71, 71, 71, 0)';
-    })
-
-    const lookupRectangleList = lookupRectangle.querySelector(".lookup_list");
-    lookupRectangleList.style.marginTop = "22%";
-
-    const lookupRectangleCircle = lookupRectangle.querySelectorAll(".circle");
-    lookupRectangleCircle.forEach(circle => {
-      circle.remove();
-    })
-
-
-    setTimeout(() => {
-      this.remove();
-      weekContainer.style.pointerEvents = 'auto';
-    }, 300)
-  }
-
-  let lookupRectangle;
 
   const rect = this.getBoundingClientRect();
   const clickY = event.clientY - rect.top; // Y coordinate of the click relative to the top of the div
@@ -374,6 +391,21 @@ function lookupClick(event) {
   lookupRectangle.id = this.id;
   lookupRectangle.appendChild(jourNum);
 
+  const overlay = document.createElement("div");
+  overlay.id = 'overlay';
+  overlay.style.width = '100%';
+  overlay.style.height = '100%';
+  overlay.style.pointerEvents = 'all';
+  overlay.style.backgroundColor = 'transparent';
+  overlay.style.display = 'block';
+  overlay.style.position = 'absolute';
+  overlay.style.top = '0';
+  overlay.style.left = '0';
+
+  overlay.addEventListener('click', lookupRectangleClick);
+  document.body.appendChild(overlay);
+
+  lookupRectangle.addEventListener('click', lookupRectangleClick);
   document.body.appendChild(lookupRectangle);
 
   lookupRectangle.style.position = 'absolute';
@@ -381,11 +413,6 @@ function lookupClick(event) {
   lookupRectangle.style.top = `${this.getBoundingClientRect().top}px`;
   lookupRectangle.style.width = `${this.getBoundingClientRect().width}px`;
   lookupRectangle.style.height = `${this.getBoundingClientRect().height}px`;
-
-  lookupRectangle.addEventListener('click', lookupRectangleClick);
-
-  weekContainer.style.pointerEvents = 'none';
-
 
   const reservationListDiv = document.createElement('div');
   reservationListDiv.classList.add('lookup_list');
@@ -409,7 +436,6 @@ function lookupClick(event) {
 
       container.appendChild(circle);
       container.appendChild(reservationName);
-
       // Ajouter le cercle au rectangle
       reservationListDiv.appendChild(container);
     }

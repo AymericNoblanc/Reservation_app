@@ -5,6 +5,7 @@ body {
   font-family: Arial, sans-serif;
   background-color: #ffffff;
   flex-direction: column;
+  touch-action: pan-x pan-y;
 }
 
 .container{
@@ -136,7 +137,7 @@ nav .animation {
   overflow-y: scroll;
   box-sizing: border-box;
   transition: margin-top 0.3s ease;
-  background-color: #FFE371;
+  background-color: rgba(255, 227, 113, 0);
 
 }
 

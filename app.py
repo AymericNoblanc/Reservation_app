@@ -26,13 +26,17 @@ def get_db_connection():
     )
     return conn
 
-@app.route('/')
-def home():
-    return 'Hello, World!'
+@app.route('/login.html')
+def login():
+    return render_template('login.html')
 
-@app.route('/test/')
+@app.route('/signup.html')
+def signup():
+    return render_template('signup.html')
+
+@app.route('/test/app.html')
 def home_test():
-    return render_template('reservation.html')
+    return render_template('app.html')
 
 #Route pour récupérer tous les travailleurs
 #Pour tester : http://127.0.0.1:5000/users
