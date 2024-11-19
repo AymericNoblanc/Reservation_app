@@ -30,9 +30,6 @@ async function getSites() {
   try {
 
     sitesData = await fetch(BASE_URL + "sites"); // Appel de l'API
-    if (!sitesData.ok) {
-      throw new Error('Erreur lors de la récupération des données');
-    }
     sitesData = await sitesData.json();
     return sitesData;
 
@@ -49,9 +46,6 @@ async function getWorkers() {
 
   try {
     workersData = await fetch(BASE_URL + "workers"); // Appel de l'API
-    if (!workersData.ok) {
-      throw new Error('Erreur lors de la récupération des données');
-    }
     workersData = await workersData.json();
 
     workersData.forEach((element) => {
@@ -72,9 +66,6 @@ async function getWorkers() {
 async function getWeekReservation(siteId, date) {
   try {
     const response = await fetch(BASE_URL + "reservations/site/" + siteId + "/week?start_date=" + date);
-    if (!response.ok) {
-      throw new Error('Erreur lors de la récupération des données');
-    }
     const data = await response.json();
 
     reservationData = { ...reservationData };
@@ -111,10 +102,6 @@ async function createReservation(workerId, siteId, date) {
       body: body
     });
 
-    if (!response.ok) {
-      throw new Error(`Erreur: ${response.statusText}`);
-    }
-
     const data = await response.json();
     console.log('Réservation créée:', data);
   } catch (error) {
@@ -139,10 +126,6 @@ async function deleteReservation(workerId, siteId, date) {
       },
       body: body
     });
-
-    if (!response.ok) {
-      throw new Error(`Erreur: ${response.statusText}`);
-    }
 
     const data = await response.json();
     console.log('Réservation supprimée:', data);
@@ -225,7 +208,7 @@ function sitesSelection() {
       this.classList.add('active');
 
       // Déplacer l'animation
-      const targetLeft = this.id * 100; // Valeur "left" à partir de l'attribut data-target
+      const targetLeft = this.id * 100; // Valeur "left" à partir de l'attribut data target
       animation.style.left = targetLeft + 'px';
       animation.style.width = 100 - 6 + 'px'; // Largeur de l'élément sélectionné (enlever les marges)
 
@@ -299,9 +282,56 @@ function createReservationCircle(worker, rectangle) {
   return circle;
 }
 
+function createRectangle(classes, dayOfWeek) {
+
+  dayRectangle.setDate(dayRectangle.getDate()+1);
+
+  const date = dayRectangle.toLocaleString('fr-Fr', { month: "numeric", day: "numeric" });
+  const formattedDate = dayRectangle.getFullYear() + '-' +
+      String(dayRectangle.getMonth() + 1).padStart(2, '0') + '-' +
+      String(dayRectangle.getDate()).padStart(2, '0');
+
+  const rectangle = document.createElement("div");
+  classes.forEach(cls => rectangle.classList.add(cls));
+  if (currentWeek === 1) rectangle.classList.add("activeWeek");
+  if (isModiferState) rectangle.style.backgroundColor = colorGray;
+
+  const dayElement = document.createElement("p");
+  dayElement.classList.add("dayOfTheWeek");
+  dayElement.textContent = dayOfWeek;
+  rectangle.appendChild(dayElement);
+
+  const dateElement = document.createElement("p");
+  dateElement.classList.add("dayNum");
+  dateElement.textContent = date;
+  rectangle.appendChild(dateElement);
+
+  rectangle.id = formattedDate;
+
+  return rectangle;
+}
+
+function createNumMoreResa(rectangle, resaRectangle) {
+  const nbMoreResa = document.createElement('div');
+  nbMoreResa.classList.add('nbMoreResa');
+  nbMoreResa.classList.add('circle');
+
+  nbMoreResa.textContent = '+' + (resaRectangle.length - 4);
+
+  if(rectangle.className.includes("big_rectangle")){
+    nbMoreResa.style.left = "240px";
+  }else{
+    nbMoreResa.style.left = "100px";
+  }
+
+  rectangle.appendChild(nbMoreResa);
+}
+
 // Gestion de l'ajout/enlevage d'une réservation
 
 function modifierButtonFunction() {
+
+  const modifierButton = document.getElementById('modifierButton');
 
   const circles = document.querySelectorAll('.circle');
 
@@ -323,7 +353,7 @@ function modifierButtonFunction() {
         element.style.backgroundColor = colorGray;
       }
     });
-    this.innerText = 'Sauvegarder'
+    modifierButton.textContent = 'Sauvegarder';
   }else {
     rectangles.forEach((element) => {
       if (element.classList.contains('activeWeek')){
@@ -332,7 +362,7 @@ function modifierButtonFunction() {
         element.style.backgroundColor = '#FFE371';
       }
     });
-    this.innerText = "Réserver"
+    modifierButton.textContent = "Réserver";
   }
   isModiferState = !isModiferState;
 }
@@ -347,34 +377,52 @@ function reservationClick() {
     const jour = lookupRectangle.querySelector(".dayOfTheWeek");
     jour.style.animation = 'none';
     jour.offsetHeight;
-    jour.style.animation = 'growDayOfTheWeek 0.5s ease-in reverse';
+    jour.style.animation = 'growDayOfTheWeek 0.3s ease-in reverse';
 
     const jourNum = lookupRectangle.querySelector(".dayNum");
     jourNum.style.animation = 'none';
     jourNum.offsetHeight;
-    jourNum.style.animation = 'growDayNum 0.5s ease-in reverse';
+    jourNum.style.animation = 'growDayNum 0.3s ease-in reverse';
 
     lookupRectangle.style.left = `${formerRectangle.getBoundingClientRect().left}px`;
     lookupRectangle.style.top = `${formerRectangle.getBoundingClientRect().top}px`;
     lookupRectangle.style.width = `${formerRectangle.getBoundingClientRect().width}px`;
     lookupRectangle.style.height = `${formerRectangle.getBoundingClientRect().height}px`;
 
+    const lookupRectangleNames = lookupRectangle.querySelectorAll(".lookup_list_name");
+    lookupRectangleNames.forEach(name => {
+      name.style.animation = 'none';
+      name.offsetHeight;
+      name.style.animation = 'growlookup_list_name 0.3s ease-in reverse';
+      name.style.color = 'rgb(71, 71, 71, 0)';
+    })
+
+    const lookupRectangleList = lookupRectangle.querySelector(".lookup_list");
+    lookupRectangleList.style.marginTop = "22%";
+
+    const lookupRectangleCircle = lookupRectangle.querySelectorAll(".circle");
+    lookupRectangleCircle.forEach(circle => {
+      circle.remove();
+    })
+
+
     setTimeout(() => {
       this.remove();
       weekContainer.style.pointerEvents = 'auto';
-    }, 475)
+    }, 300)
   }
 
+  let lookupRectangle;
   if (isModiferState) {
-    isReserved = this.querySelector("#" + workerSelected.firstname + "_" + workerSelected.lastname);
+    const isReserved = this.querySelector("#" + workerSelected.firstname + "_" + workerSelected.lastname);
 
     const site = sitesData.find(site => site.name === switchSiteSelected.name);
 
     const worker = workersData.find(worker => worker.firstname === workerSelected.firstname && worker.lastname === workerSelected.lastname);
-    
-    reservationCircles = this.querySelectorAll(".circle");
 
-    if (isReserved){
+    const reservationCircles = this.querySelectorAll(".circle");
+
+    if (isReserved) {
       this.style.backgroundColor = colorGray;
       deleteReservation(worker.id, site.id, this.id);
 
@@ -382,18 +430,18 @@ function reservationClick() {
 
       reservationCircles.forEach(circle => {
         const circleLeftPosition = Number(circle.style.left.split('px')[0]);
-        if (circleLeftPosition > leftPosition){
-          if(this.className.includes("big_rectangle")){
-            circle.style.left = circleLeftPosition-45 + 'px';
-          }else{
-            circle.style.left = circleLeftPosition-20 + 'px';
+        if (circleLeftPosition > leftPosition) {
+          if (this.className.includes("big_rectangle")) {
+            circle.style.left = circleLeftPosition - 45 + 'px';
+          } else {
+            circle.style.left = circleLeftPosition - 20 + 'px';
           }
         }
 
       });
-      
+
       isReserved.remove();
-    }else{
+    } else {
       createReservation(worker.id, site.id, this.id);
       const circle = createReservationCircle(worker, this);
 
@@ -402,7 +450,7 @@ function reservationClick() {
       // Ajouter le cercle au rectangle
       this.appendChild(circle);
     }
-  }else{
+  } else {
 
     lookupRectangle = document.createElement("div");
     lookupRectangle.classList.add("lookup_rectangle");
@@ -412,7 +460,7 @@ function reservationClick() {
     const jour = document.createElement("div");
     jour.classList.add("dayOfTheWeek");
     jour.textContent = this.querySelector(".dayOfTheWeek").textContent;
-    jour.style.animation = 'growDayOfTheWeek 0.5s ease-out'
+    jour.style.animation = 'growDayOfTheWeek 0.3s ease-out'
 
     lookupRectangle.appendChild(jour);
 
@@ -420,7 +468,7 @@ function reservationClick() {
     const jourNum = document.createElement("div");
     jourNum.classList.add("dayNum");
     jourNum.textContent = this.querySelector(".dayNum").textContent;
-    jourNum.style.animation = 'growDayNum 0.5s ease-out'
+    jourNum.style.animation = 'growDayNum 0.3s ease-out'
 
     lookupRectangle.id = this.id;
     lookupRectangle.appendChild(jourNum);
@@ -437,34 +485,55 @@ function reservationClick() {
 
     weekContainer.style.pointerEvents = 'none';
 
+
+    const reservationListDiv = document.createElement('div');
+    reservationListDiv.classList.add('lookup_list');
+    reservationListDiv.style.marginTop = "22%";
+
+    lookupRectangle.appendChild(reservationListDiv);
+
     reservationData.forEach(reservation => {
       if (reservation.date === this.id) {
 
+        let container = document.createElement('div');
+        container.classList.add('lookup_list_element');
+
         // Créer un div pour le cercle
-        const circle = createReservationCircle(workersData.find(worker => worker.id === reservation.worker_id), lookupRectangle);
+        let circle = createReservationCircle(workersData.find(worker => worker.id === reservation.worker_id), lookupRectangle);
+
+        let reservationName = document.createElement('div');
+        reservationName.classList.add('lookup_list_name');
+        reservationName.textContent = workersData.find(worker => worker.id === reservation.worker_id).firstname + ' ' + workersData.find(worker => worker.id === reservation.worker_id).lastname;
+        reservationName.style.animation = 'growlookup_list_name 0.3s ease-out';
+
+        container.appendChild(circle);
+        container.appendChild(reservationName);
 
         // Ajouter le cercle au rectangle
-        lookupRectangle.appendChild(circle);
+        reservationListDiv.appendChild(container);
       }
     });
 
     setTimeout(() => {
+
       lookupRectangle.style.height = '400px';
       lookupRectangle.style.width = '320px';
 
       if (this.querySelector(".dayOfTheWeek").textContent === 'Lundi') {
         lookupRectangle.style.top = `${this.getBoundingClientRect().top + 15}px`; // Adjust left position
-      }else if (this.querySelector(".dayOfTheWeek").textContent === 'Mardi') {
+      } else if (this.querySelector(".dayOfTheWeek").textContent === 'Mardi') {
         lookupRectangle.style.top = `${this.getBoundingClientRect().top - 135}px`; // Adjust left position
-      }else if (this.querySelector(".dayOfTheWeek").textContent === 'Mercredi') {
+      } else if (this.querySelector(".dayOfTheWeek").textContent === 'Mercredi') {
         lookupRectangle.style.left = `${this.getBoundingClientRect().left - 170}px`; // Adjust left position
         lookupRectangle.style.top = `${this.getBoundingClientRect().top - 135}px`; // Adjust left position
-      }else if (this.querySelector(".dayOfTheWeek").textContent === 'Jeudi') {
+      } else if (this.querySelector(".dayOfTheWeek").textContent === 'Jeudi') {
         lookupRectangle.style.top = `${this.getBoundingClientRect().top - 285}px`; // Adjust left position
-      }else if (this.querySelector(".dayOfTheWeek").textContent === 'Vendredi') {
+      } else if (this.querySelector(".dayOfTheWeek").textContent === 'Vendredi') {
         lookupRectangle.style.left = `${this.getBoundingClientRect().left - 170}px`; // Adjust left position
         lookupRectangle.style.top = `${this.getBoundingClientRect().top - 285}px`; // Adjust left position
       }
+
+      reservationListDiv.style.marginTop = "28%";
 
       jour.style.fontSize = '32px';
       jour.style.marginLeft = '3vh';
@@ -473,7 +542,20 @@ function reservationClick() {
       jourNum.style.marginTop = '6.5vh';
       jourNum.style.marginLeft = '5vh';
 
-      }, 1)
+      const elements = reservationListDiv.querySelectorAll(".lookup_list_element");
+      elements.forEach(element => {
+
+        const circle = element.querySelector('.circle');
+        circle.style.position = 'relative';
+        circle.style.left = '15px';
+        circle.style.bottom = '0px';
+
+        const reservationName = element.querySelector('.lookup_list_name');
+        reservationName.style.color = 'rgb(71, 71, 71)';
+
+      });
+
+    }, 1)
 
   }
 }
@@ -484,7 +566,6 @@ function weekTemplate (){
   currentWeek += 1;
 
   dayRectangle.setDate((dayRectangle.getDate() - (dayRectangle.getDay() + 6) % 7)+7);
-  let formattedDate;
 
   // Créer l'élément principal contenant la semaine et les rectangles
   const mainDiv = document.createElement("div");
@@ -500,31 +581,8 @@ function weekTemplate (){
   daysDiv.classList.add("days");
 
   // Créer le grand rectangle
-  const bigRectangle = document.createElement("div");
-  bigRectangle.classList.add("big_rectangle");
-  if (currentWeek === 1){bigRectangle.classList.add("activeWeek");}
-  if (isModiferState){
-    bigRectangle.style.backgroundColor = colorGray;
-  }
-
-  // Créer le jour de la semaine
-  const lundi = document.createElement("p");
-  lundi.classList.add("dayOfTheWeek");
-  lundi.textContent = "Lundi";
-
-  bigRectangle.appendChild(lundi);
-
-  // Créer la date
-  const lundiNum = document.createElement("p");
-  lundiNum.classList.add("dayNum");
-  lundiNum.textContent = `${dayRectangle.toLocaleString('fr-Fr',{month: "numeric", day: "numeric"})}`;
-
-  formattedDate = dayRectangle.getFullYear() + '-' +
-    String(dayRectangle.getMonth() + 1).padStart(2, '0') + '-' +
-    String(dayRectangle.getDate()).padStart(2, '0');
-
-  bigRectangle.id = formattedDate;
-  bigRectangle.appendChild(lundiNum);
+  dayRectangle.setDate(dayRectangle.getDate()-1);
+  const bigRectangle = createRectangle(["big_rectangle"], "Lundi");
 
   // Créer le conteneur pour les petits rectangles
   const smallDaysDiv = document.createElement("div");
@@ -535,59 +593,8 @@ function weekTemplate (){
   topSmallDaysDiv.classList.add("days", "small", "top");
 
   // Petits rectangles dans la ligne du haut
-  const smallRectangle1 = document.createElement("div");
-  smallRectangle1.classList.add("small_rectangle");
-  if (currentWeek === 1){smallRectangle1.classList.add("activeWeek");}
-  if (isModiferState){
-    smallRectangle1.style.backgroundColor = colorGray;
-  }
-
-  // Créer le jour de la semaine
-  const mardi = document.createElement("p");
-  mardi.classList.add("dayOfTheWeek");
-  mardi.textContent = "Mardi";
-
-  smallRectangle1.appendChild(mardi);
-
-  // Créer la date
-  const mardiNum = document.createElement("p");
-  mardiNum.classList.add("dayNum");
-  dayRectangle.setDate(dayRectangle.getDate()+1);
-  mardiNum.textContent = `${dayRectangle.toLocaleString('fr-Fr',{month: "numeric", day: "numeric"})}`;
-
-  formattedDate = dayRectangle.getFullYear() + '-' +
-    String(dayRectangle.getMonth() + 1).padStart(2, '0') + '-' +
-    String(dayRectangle.getDate()).padStart(2, '0');
-
-  smallRectangle1.id = formattedDate;
-  smallRectangle1.appendChild(mardiNum);
-
-  const smallRectangle2 = document.createElement("div");
-  smallRectangle2.classList.add("small_rectangle");
-  if (currentWeek === 1){smallRectangle2.classList.add("activeWeek");}
-  if (isModiferState){
-    smallRectangle2.style.backgroundColor = colorGray;
-  }
-  
-  // Créer le jour de la semaine
-  const mercredi = document.createElement("p");
-  mercredi.classList.add("dayOfTheWeek");
-  mercredi.textContent = "Mercredi";
-
-  smallRectangle2.appendChild(mercredi);
-
-  // Créer la date
-  const mercrediNum = document.createElement("p");
-  mercrediNum.classList.add("dayNum");
-  dayRectangle.setDate(dayRectangle.getDate()+1);
-  mercrediNum.textContent = `${dayRectangle.toLocaleString('fr-Fr',{month: "numeric", day: "numeric"})}`;
-
-  formattedDate = dayRectangle.getFullYear() + '-' +
-    String(dayRectangle.getMonth() + 1).padStart(2, '0') + '-' +
-    String(dayRectangle.getDate()).padStart(2, '0');
-
-  smallRectangle2.id = formattedDate;
-  smallRectangle2.appendChild(mercrediNum);
+  const smallRectangle1 = createRectangle(["small_rectangle"], "Mardi");
+  const smallRectangle2 = createRectangle(["small_rectangle"], "Mercredi");
 
   // Ajouter les petits rectangles à la ligne du haut
   topSmallDaysDiv.appendChild(smallRectangle1);
@@ -597,60 +604,8 @@ function weekTemplate (){
   const bottomSmallDaysDiv = document.createElement("div");
   bottomSmallDaysDiv.classList.add("days", "small", "bottom");
 
-  // Petits rectangles dans la ligne du bas
-  const smallRectangle3 = document.createElement("div");
-  smallRectangle3.classList.add("small_rectangle");
-  if (currentWeek === 1){smallRectangle3.classList.add("activeWeek");}
-  if (isModiferState){
-    smallRectangle3.style.backgroundColor = colorGray;
-  }
-    
-  // Créer le jour de la semaine
-  const jeudi = document.createElement("p");
-  jeudi.classList.add("dayOfTheWeek");
-  jeudi.textContent = "Jeudi";
-
-  smallRectangle3.appendChild(jeudi);
-
-  // Créer la date
-  const jeudiNum = document.createElement("p");
-  jeudiNum.classList.add("dayNum");
-  dayRectangle.setDate(dayRectangle.getDate()+1);
-  jeudiNum.textContent = `${dayRectangle.toLocaleString('fr-Fr',{month: "numeric", day: "numeric"})}`;
-
-  formattedDate = dayRectangle.getFullYear() + '-' +
-    String(dayRectangle.getMonth() + 1).padStart(2, '0') + '-' +
-    String(dayRectangle.getDate()).padStart(2, '0');
-
-  smallRectangle3.id = formattedDate;
-  smallRectangle3.appendChild(jeudiNum);
-
-  const smallRectangle4 = document.createElement("div");
-  smallRectangle4.classList.add("small_rectangle");
-  if (currentWeek === 1){smallRectangle4.classList.add("activeWeek");}
-  if (isModiferState){
-    smallRectangle4.style.backgroundColor = colorGray;
-  }
-    
-  // Créer le jour de la semaine
-  const vendredi = document.createElement("p");
-  vendredi.classList.add("dayOfTheWeek");
-  vendredi.textContent = "Vendredi";
-
-  smallRectangle4.appendChild(vendredi);
-
-  // Créer la date
-  const vendrediNum = document.createElement("p");
-  vendrediNum.classList.add("dayNum");
-  dayRectangle.setDate(dayRectangle.getDate()+1);
-  vendrediNum.textContent = `${dayRectangle.toLocaleString('fr-Fr',{month: "numeric", day: "numeric"})}`;
-
-  formattedDate = dayRectangle.getFullYear() + '-' +
-    String(dayRectangle.getMonth() + 1).padStart(2, '0') + '-' +
-    String(dayRectangle.getDate()).padStart(2, '0');
-
-  smallRectangle4.id = formattedDate;
-  smallRectangle4.appendChild(vendrediNum);
+  const smallRectangle3 = createRectangle(["small_rectangle"], "Jeudi");
+  const smallRectangle4 = createRectangle(["small_rectangle"], "Vendredi");
 
   // Ajouter les petits rectangles à la ligne du bas
   bottomSmallDaysDiv.appendChild(smallRectangle3);
@@ -668,7 +623,7 @@ function weekTemplate (){
   mainDiv.appendChild(weekElement);
   mainDiv.appendChild(daysDiv);
 
-  // Ajouter l'élément principal dans le container (par exemple `body`)
+  // Ajouter l'élément principal dans le container (par exemple `body')
   weekContainer.appendChild(mainDiv);
 
   return mainDiv;
@@ -694,21 +649,25 @@ async function fetchReservations(allRectanglesInCreation) {
 
     const workers = await getWorkers();
 
-    reservationData.forEach(reservation => {
-      allRectanglesInCreation.forEach(rectangle => {
-        if (reservation.date === rectangle.id) {
+    allRectanglesInCreation.forEach(rectangle => {
+      resaRectangle = reservationData.filter(reservation => reservation.date === rectangle.id);
 
-          // Créer un div pour le cercle
-          const circle = createReservationCircle(workers.find(worker => worker.id === reservation.worker_id), rectangle);
+      let maxResa = 4;
+      if (rectangle.classList.contains('big_rectangle')){
+        maxResa = 5;
+      }
 
-          if (isModiferState) {
-            circle.style.display = 'none';
-          }
+      resaRectangle.slice(0, maxResa).forEach(reservation => {
+        const circle = createReservationCircle(workers.find(worker => worker.id === reservation.worker_id), rectangle);
 
-          // Ajouter le cercle au rectangle
-          rectangle.appendChild(circle);
+        if (isModiferState) {
+          circle.style.display = 'none';
         }
+        rectangle.appendChild(circle);
       });
+      if (resaRectangle.length > maxResa) {
+        createNumMoreResa(rectangle, resaRectangle);
+      }
     });
 
   } catch (error) {
@@ -727,8 +686,6 @@ function createWeek () {
     rect.addEventListener('click', reservationClick);
   });
 
-  const modifierButton = document.getElementById('modifierButton');
-  modifierButton.onclick = function() {modifierButtonFunction()};
 
   fetchReservations(allRectanglesInCreation);
 
@@ -739,6 +696,10 @@ function createWeek () {
 window.onload = async function () {
 
   weekTemplate();
+
+  const modifierButton = document.getElementById('modifierButton');
+  modifierButton.addEventListener('click', function() {modifierButtonFunction()});
+
 
   await getSites();
   await getWorkers();
