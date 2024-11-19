@@ -125,7 +125,46 @@ nav .animation {
   border-radius: 13px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 6px 20px rgba(0, 0, 0, 0.19);
   z-index: 0;
-  transition: width 0.5s ease, height 0.5s ease, left 0.5s ease, top 0.5s ease, bottom 0.5s ease;
+  transition: width 0.3s ease, height 0.3s ease, left 0.3s ease, top 0.3s ease, bottom 0.3s ease;
+}
+
+.lookup_list {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 77%;
+  overflow-y: scroll;
+  box-sizing: border-box;
+  transition: margin-top 0.3s ease;
+  background-color: #FFE371;
+
+}
+
+.lookup_list_name {
+  margin-top: auto;
+  margin-bottom: auto;
+  margin-left: 25px;
+  color: rgb(71, 71, 71, 0);
+  font-size: 20px;
+  font-weight: bold;
+}
+@keyframes growlookup_list_name {
+  0% {
+    color: rgba(71, 71, 71, 0);
+  }
+  100% {
+    color: rgb(71, 71, 71);
+  }
+}
+
+.lookup_list_element {
+  width: 100%;
+  height: 50px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  box-sizing: border-box;
+  margin-top: 10px;
 }
 
 .activeWeek{
@@ -198,7 +237,14 @@ nav .animation {
   font-size: 18px;
   display: flex;
   justify-content: center;
-  align-items: center; 
+  align-items: center;
+  transition: width 0.3s ease, height 0.3s ease, left 0.3s ease, right 0.3s ease, top 0.3s ease, bottom 0.3s ease;
+}
+
+.nbMoreResa{
+  color: #606060;
+  background-color: #d8d8db;
+  font-weight: bold;
 }
 
 .selectWorker {
