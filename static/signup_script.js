@@ -5,7 +5,7 @@ document.getElementById('signup-form').addEventListener('submit', async (event) 
     const password = document.getElementById('password').value;
     const firstname = document.getElementById('firstname').value;
     const lastname = document.getElementById('lastname').value;
-    const domaine = document.getElementById('domaine').value;
+    const domaine = document.getElementById('domaine').value.toLowerCase();
 
     try {
         const response = await fetch('/signup', {
@@ -24,3 +24,11 @@ document.getElementById('signup-form').addEventListener('submit', async (event) 
         console.error('Erreur lors de l inscription:', error);
     }
 });
+
+window.addEventListener('keydown',function(e) {
+    if (e.keyIdentifier==='U+000A' || e.keyIdentifier==='Enter' || e.keyCode===13) {
+            e.preventDefault();
+
+            return false;
+    }
+}, true);
