@@ -225,6 +225,11 @@ def signupPOST():
 
     return response
 
+@app.route('/')
+def home():
+
+    return redirect('/login/')
+
 @app.route('/login/')
 def login():
 
