@@ -14,9 +14,9 @@ document.getElementById('signup-form').addEventListener('submit', async (event) 
             body: JSON.stringify({ email, password, firstname, lastname, domaine })
         });
 
-        const result = await response.text();
+        const result = await response.json();
         if (response.ok) {
-            window.location.href = "/" + result + "/app/"; // Redirige vers la page de login
+            window.location.href = "/" + result.domaine + "/app/"; // Redirige vers la page d'accueil (ou autre)
         } else {
             alert(result); // Affiche l'erreur
         }

@@ -1,9 +1,10 @@
-from flask import Flask, jsonify, request, render_template
+from flask import Flask, jsonify, request, render_template, make_response, redirect
 import psycopg2
 from datetime import datetime, timedelta
 from flask_cors import CORS
 import json
 from werkzeug.security import generate_password_hash, check_password_hash
+import uuid
 
 app = Flask(__name__)
 CORS(app)
@@ -28,9 +29,34 @@ def get_db_connection():
     )
     return conn
 
-@app.route('/login/')
-def login():
-    return render_template('login.html')
+def check_auth_token(token):
+
+    if token:
+
+        conn = get_db_connection()
+        cur = conn.cursor()
+
+        query = '''
+            SELECT 
+                cr.user_id
+            FROM 
+                cookie c
+            JOIN 
+                credential cr on c.credential_id = cr.id
+            WHERE
+                token = '%s' AND expires_at > NOW()
+        ''' % (token)
+        cur.execute(query)
+        row = cur.fetchone()
+
+        cur.close()
+        conn.close()
+
+        # Vérifier si l'utilisateur existe
+        if row is not None:
+            return True
+
+    return False
 
 @app.route('/login', methods=['POST'])
 def loginPOST():
@@ -43,7 +69,7 @@ def loginPOST():
 
     query = '''
         SELECT 
-            c.password_hash, d.name, c.user_id
+            c.password_hash, d.name, c.user_id, c.id
         FROM 
             credential c
         JOIN 
@@ -64,14 +90,28 @@ def loginPOST():
     if not check_password_hash(rows[0][0], password):
         return "Mot de passe incorrect.", 400
 
+    # Générer un UUID pour le cookie
+    token = str(uuid.uuid4())
+    expires_at = datetime.now() + timedelta(weeks=52)
+
+    # Mettre à jour dans la "base de données"
+    query = '''
+            INSERT INTO
+                cookie (credential_id, token, expires_at)
+            VALUES
+                ('%s', '%s', '%s')
+        ''' % (rows[0][3], token, expires_at)
+    cur.execute(query)
+    conn.commit()
+
     cur.close()
     conn.close()
 
-    return rows[0][1], 200
+    # Définir un cookie avec l'UUID
+    response = make_response(jsonify({"domaine": rows[0][1]}))
+    response.set_cookie('authToken', token, httponly=False, max_age=60 * 60 * 24 * 7 * 52)
 
-@app.route('/signup/')
-def signup():
-    return render_template('signup.html')
+    return response
 
 @app.route('/signup', methods=['POST'])
 def signupPOST():
@@ -140,7 +180,7 @@ def signupPOST():
 
     query = '''
         SELECT
-            user_id
+            id, user_id
         FROM
             credential
         WHERE
@@ -148,8 +188,10 @@ def signupPOST():
     ''' % (email)
     cur.execute(query)
     conn.commit()
+    row = cur.fetchone()
 
-    user_id = cur.fetchone()[0]
+    credential_id = row[0]
+    user_id = row[1]
 
     query = '''
         INSERT INTO
@@ -160,15 +202,82 @@ def signupPOST():
     cur.execute(query)
     conn.commit()
 
+    # Générer un UUID pour le cookie
+    token = str(uuid.uuid4())
+    expires_at = datetime.utcnow() + timedelta(weeks=52)
+
+    # Mettre à jour dans la "base de données"
+    query = '''
+            INSERT INTO
+                cookie (credential_id, token, expires_at)
+            VALUES
+                ('%s', '%s', '%s')
+        ''' % (credential_id, token, expires_at)
+    cur.execute(query)
+    conn.commit()
+
     cur.close()
     conn.close()
 
-    return domaine_name, 200
+    # Définir un cookie avec l'UUID
+    response = make_response(jsonify({"domaine": domaine_name}))
+    response.set_cookie('authToken', token, httponly=False, max_age=60 * 60 * 24 * 7 * 52)
 
+    return response
+
+@app.route('/login/')
+def login():
+
+    if check_auth_token(request.cookies.get('authToken')):
+        return redirect('/test/app/')
+
+    return render_template('login.html')
+
+@app.route('/signup/')
+def signup():
+
+    return render_template('signup.html')
 
 @app.route('/test/app/')
 def home_test():
-    return render_template('app.html')
+
+    if check_auth_token(request.cookies.get('authToken')):
+        return render_template('app.html')
+
+    return redirect('/login/')
+
+#Route pour récupérer tous les travailleurs
+#Pour tester : http://127.0.0.1:5000/users
+@app.route('/find-cookie/<cookie>', methods=['GET'])
+def get_user_from_cookie(cookie):
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    query = '''
+        SELECT 
+            cr.user_id
+        FROM 
+            cookie c
+        JOIN 
+            credential cr on c.credential_id = cr.id
+        WHERE
+            c.token = '%s'
+    ''' % (cookie)
+    cur.execute(query)
+    row = cur.fetchone()
+
+    user = []
+    user.append({
+        "user_id": row[0]
+    })
+
+    cur.close()
+    conn.close()
+
+    response = jsonify(user)
+    response.headers.add('Access-Control-Allow-Origin', '*')
+
+    return response
 
 #Route pour récupérer tous les travailleurs
 #Pour tester : http://127.0.0.1:5000/users

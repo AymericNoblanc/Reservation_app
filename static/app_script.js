@@ -42,6 +42,25 @@ async function getSites() {
   }
 }
 
+async function getUserFromCookie() {
+  try {
+
+    let cookie = `; ${document.cookie}`;
+    cookie = cookie.split("; authToken=");
+    cookie = cookie.pop().split(';').shift();
+
+    console.log(document.cookie);
+
+    User = await fetch(URLformator(BASE_URL) + "find-cookie/" + cookie); // Appel de l'API
+    User = await User.json();
+
+    return User[0].user_id;
+
+  } catch (error) {
+    console.error('Erreur:', error); // Gestion des erreurs
+  }
+}
+
 async function getUsers() {
   if (usersData) {
     // Si les données sont déjà récupérées, les retourner directement
@@ -51,8 +70,10 @@ async function getUsers() {
   try {
     usersData = await fetch(BASE_URL + "users"); // Appel de l'API
     usersData = await usersData.json();
+    User = await getUserFromCookie()
 
-    User = getRandomUser();
+    User = usersData.find(user => user.id === User);
+
     selectUserCircle.style.backgroundColor = User.color;
     selectUserCircle.textContent = User.firstname[0] + User.lastname[0];
 
@@ -136,17 +157,8 @@ async function deleteReservation(userId, siteId, date) {
 
 // Gestion du travailleur sélectionné
 
-function getRandomUser(){
-  UserNum += 1;
-  return usersData[UserNum%usersData.length];
-}
-
 const selectUserCircle = document.getElementById("selectUser");
 selectUserCircle.addEventListener("click", () => {
-  User = getRandomUser();
-  selectUserCircle.style.backgroundColor = User.color;
-  selectUserCircle.textContent = User.firstname[0] + User.lastname[0];
-
 });
 
 // Gestion du slide des sites
