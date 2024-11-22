@@ -32,10 +32,6 @@ def get_db_connection():
 def home():
     return render_template('reservation.html')
 
-@app.route('/healthcheck')
-def healthcheck():
-    return ('', 204)
-
 #Route pour récupérer tous les travailleurs
 #Pour tester : http://127.0.0.1:5000/workers
 @app.route('/workers', methods=['GET'])
