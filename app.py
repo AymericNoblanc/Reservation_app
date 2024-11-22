@@ -230,6 +230,10 @@ def home():
 
     return redirect('/login/')
 
+@app.route('/healthcheck')
+def healthcheck():
+    return ('', 204)
+
 @app.route('/login/')
 def login():
 
