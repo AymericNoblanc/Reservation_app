@@ -247,7 +247,15 @@ def signup():
 def home_test():
 
     if check_auth_token(request.cookies.get('authToken')):
-        return render_template('app.html')
+        return render_template('test_app.html')
+
+    return redirect('/login/')
+
+@app.route('/noblanc/app/')
+def noblanc_test():
+
+    if check_auth_token(request.cookies.get('authToken')):
+        return render_template('noblanc_app.html')
 
     return redirect('/login/')
 
