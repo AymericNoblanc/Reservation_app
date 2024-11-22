@@ -46,10 +46,8 @@ async function getUserFromCookie() {
   try {
 
     let cookie = `; ${document.cookie}`;
-    cookie = cookie.split("; authToken=");
+    cookie = cookie.split("authToken=");
     cookie = cookie.pop().split(';').shift();
-
-    console.log(document.cookie);
 
     User = await fetch(URLformator(BASE_URL) + "find-cookie/" + cookie); // Appel de l'API
     User = await User.json();
