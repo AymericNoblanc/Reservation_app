@@ -3,12 +3,14 @@ import psycopg2
 from datetime import datetime, timedelta
 from flask_cors import CORS
 import json
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
 
-data = {}
+# Simuler une base de données
+users_db = {}
 
 # Fonction pour se connecter à la base de données PostgreSQL
 def get_db_connection():
@@ -26,15 +28,145 @@ def get_db_connection():
     )
     return conn
 
-@app.route('/login.html')
+@app.route('/login/')
 def login():
     return render_template('login.html')
 
-@app.route('/signup.html')
+@app.route('/login', methods=['POST'])
+def loginPOST():
+    data = request.get_json()
+    email = data.get('email').lower()
+    password = data.get('password')
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    query = '''
+        SELECT 
+            c.password_hash, d.name, c.user_id
+        FROM 
+            credential c
+        JOIN 
+            domaine d on c.domaine_id = d.id
+        WHERE
+            c.email = '%s'
+    ''' % (email)
+    cur.execute(query)
+    rows = cur.fetchall()
+
+    # Vérifier si l'utilisateur existe
+    if len(rows) == 0:
+        cur.close()
+        conn.close()
+        return "Utilisateur non trouvé.", 400
+
+    # Vérifier le mot de passe
+    if not check_password_hash(rows[0][0], password):
+        return "Mot de passe incorrect.", 400
+
+    cur.close()
+    conn.close()
+
+    return rows[0][1], 200
+
+@app.route('/signup/')
 def signup():
     return render_template('signup.html')
 
-@app.route('/test/app.html')
+@app.route('/signup', methods=['POST'])
+def signupPOST():
+    data = request.get_json()
+    email = data.get('email').lower()
+    password = data.get('password')
+    firstname = data.get('firstname')
+    lastname = data.get('lastname')
+    domaine = data.get('domaine')
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    query = '''
+        SELECT 
+            *
+        FROM 
+            credential
+        WHERE
+            email = '%s'
+    ''' % (email)
+    cur.execute(query)
+    rows = cur.fetchall()
+
+    # Vérifier si l'email existe déjà
+    if len(rows) != 0:
+        cur.close()
+        conn.close()
+        return "Email déjà utilisé.", 400
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    query = '''
+        SELECT 
+            *
+        FROM 
+            domaine
+        WHERE
+            code = '%s'
+    ''' % (domaine)
+    cur.execute(query)
+    rows = cur.fetchall()
+
+    # Vérifier si le domaine existe
+    if len(rows) == 0:
+        cur.close()
+        conn.close()
+        return "Domaine non trouvé.", 400
+
+    domaine_id = rows[0][0]
+    domaine_name = rows[0][1]
+    domaineUser = domaine_name + '_user'
+
+    # Hacher le mot de passe et l'enregistrer
+    hashed_password = generate_password_hash(password)
+
+    query = '''
+        INSERT INTO
+            credential (email, password_hash, domaine_id)
+        VALUES
+            ('%s', '%s', '%s')
+    ''' % (email, hashed_password, domaine_id)
+    cur.execute(query)
+    conn.commit()
+
+    query = '''
+        SELECT
+            user_id
+        FROM
+            credential
+        WHERE
+            email = '%s'
+    ''' % (email)
+    cur.execute(query)
+    conn.commit()
+
+    user_id = cur.fetchone()[0]
+
+    query = '''
+        INSERT INTO
+            %s (id, firstname, lastname)
+        VALUES
+            ('%s', '%s', '%s')
+    ''' % (domaineUser, user_id, firstname, lastname)
+    cur.execute(query)
+    conn.commit()
+
+    cur.close()
+    conn.close()
+
+    return domaine_name, 200
+
+
+@app.route('/test/app/')
 def home_test():
     return render_template('app.html')
 

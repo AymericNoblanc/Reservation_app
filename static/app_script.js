@@ -18,8 +18,9 @@ dayRectangle.setDate(dayRectangle.getDate()-7);
 
 function URLformator(str) {
   const lastSlashIndex = str.lastIndexOf('/');
-  if (lastSlashIndex !== -1) {
-    return str.substring(0, lastSlashIndex + 1); // Inclut le dernier '/'
+  const secondLastSlashIndex = str.lastIndexOf('/', lastSlashIndex - 1);
+  if (secondLastSlashIndex !== -1) {
+    return str.substring(0, secondLastSlashIndex + 1); // Inclut le dernier '/'
   }
   return str; // Si aucun '/' n'est trouvé, retourne la chaîne entière
 }

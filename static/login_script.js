@@ -1,10 +1,28 @@
-document.getElementById('login-form').addEventListener('submit', function(event) {
-    event.preventDefault(); // Empêche la soumission classique du formulaire
-    // Ici vous pouvez valider les champs, appeler une API, etc.
-    window.location.href = "/test/app.html"; // Redirection vers la page suivante
-});
-
 document.getElementById("forgot-password-link").addEventListener("click", (e) => {
     e.preventDefault(); // Empêche le comportement par défaut
     //alert("Lien de réinitialisation envoyé à votre email.");
+});
+
+document.getElementById('login-form').addEventListener('submit', async (event) => {
+    event.preventDefault(); // Empêche la soumission classique du formulaire
+
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    try {
+        const response = await fetch('/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+
+        const result = await response.text();
+        if (response.ok) {
+            window.location.href = "/" + result + "/app/"; // Redirige vers la page d'accueil (ou autre)
+        } else {
+            alert(result); // Affiche l'erreur
+        }
+    } catch (error) {
+        console.error('Erreur lors de la connexion:', error);
+    }
 });
