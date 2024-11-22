@@ -246,8 +246,7 @@ def home_test():
 
     return redirect('/login/')
 
-#Route pour récupérer tous les travailleurs
-#Pour tester : http://127.0.0.1:5000/users
+#Route pour récupérer les informations de l'utilisateur connecté
 @app.route('/find-cookie/<cookie>', methods=['GET'])
 def get_user_from_cookie(cookie):
     conn = get_db_connection()
