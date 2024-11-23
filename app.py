@@ -38,11 +38,13 @@ def check_auth_token(token):
 
         query = '''
             SELECT 
-                cr.user_id
+                d.name
             FROM 
                 cookie c
             JOIN 
                 credential cr on c.credential_id = cr.id
+            JOIN 
+	            domaine d on cr.domaine_id = d.id
             WHERE
                 token = '%s' AND expires_at > NOW()
         ''' % (token)
@@ -54,7 +56,7 @@ def check_auth_token(token):
 
         # Vérifier si l'utilisateur existe
         if row is not None:
-            return True
+            return row[0]
 
     return False
 
@@ -237,8 +239,10 @@ def healthcheck():
 @app.route('/login/')
 def login():
 
-    if check_auth_token(request.cookies.get('authToken')):
-        return redirect('/test/app/')
+    domaine = check_auth_token(request.cookies.get('authToken'))
+
+    if domaine is not None:
+        return redirect('/' + domaine + '/app/')
 
     return render_template('login.html')
 
@@ -250,7 +254,7 @@ def signup():
 @app.route('/test/app/')
 def home_test():
 
-    if check_auth_token(request.cookies.get('authToken')):
+    if check_auth_token(request.cookies.get('authToken')) is not None:
         return render_template('test_app.html')
 
     return redirect('/login/')
@@ -258,7 +262,7 @@ def home_test():
 @app.route('/noblanc/app/')
 def noblanc_test():
 
-    if check_auth_token(request.cookies.get('authToken')):
+    if check_auth_token(request.cookies.get('authToken')) is not None:
         return render_template('noblanc_app.html')
 
     return redirect('/login/')
