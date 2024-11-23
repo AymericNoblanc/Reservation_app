@@ -6,6 +6,9 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Créer un compte</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='signup_styles.css') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon-16x16.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
 </head>
 <body>
 <div class="signup-container">
@@ -30,7 +33,7 @@
             </div>
             <div class="input-group">
                 <label for="domaine">Domaine</label>
-                <textarea id="domaine" name="extra-info" placeholder="Domaine"></textarea>
+                <textarea id="domaine" name="extra-info" rows="1" placeholder="Domaine"></textarea>
             </div>
             <button type="submit" class="signup-button">Créer un compte</button>
             <p class="signup-footer">Déjà inscrit ? <a href="/login/">Se connecter</a></p>
