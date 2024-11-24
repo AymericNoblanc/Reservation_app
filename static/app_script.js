@@ -562,6 +562,12 @@ function checkCircleClick(event) {
 function weekTemplate (){
   currentWeek += 1;
 
+  if (dayRectangle.getDay() === 0){
+    dayRectangle.setDate(dayRectangle.getDate() +1);
+  }else if (dayRectangle.getDay() === 6){
+    dayRectangle.setDate(dayRectangle.getDate() +2);
+  }
+
   dayRectangle.setDate((dayRectangle.getDate() - (dayRectangle.getDay() + 6) % 7)+7);
 
   // Créer l'élément principal contenant la semaine et les rectangles

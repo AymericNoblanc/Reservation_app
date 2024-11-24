@@ -12,6 +12,7 @@
 </head>
 <body>
     <div class="login-container">
+        <p id="error-message" style="color: red; font-size: 14px;"></p>
         <div class="login-card">
             <h1 class="login-title">Connexion</h1>
             <form id="login-form">
@@ -24,10 +25,10 @@
                     <input type="password" id="password" name="password" placeholder="Entrez votre mot de passe" required>
                 </div>
                 <div class="forgot-password">
-                    <a href="#" id="forgot-password-link">Mot de passe oublié ?</a>
+                    <!--<a href="#" id="forgot-password-link">Mot de passe oublié ?</a>-->
                 </div>
                 <button type="submit" class="login-button">Se connecter</button>
-                <p class="login-footer">Pas encore inscrit ? <a href="/signup">Créer un compte</a></p>
+                <p class="login-footer">Pas encore inscrit ? <a id="signup-link" href="/signup/">Créer un compte</a></p>
             </form>
         </div>
     </div>
