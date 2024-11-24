@@ -277,7 +277,9 @@ function createReservationCircle(user, rectangle) {
   circle.textContent = user.firstname[0] + user.lastname[0];
 
   circle.style.backgroundColor = user.color;
-  circle.id = user.firstname + "_" + user.lastname;
+  if (user.id === User.id){
+    circle.id = 'activeUser';
+  }
 
   return circle;
 }
@@ -520,7 +522,7 @@ function checkCircleClick(event) {
   const parentDiv = this.parentElement;
   const numResa = parentDiv.querySelector('.nbResa');
   const listOfCircles = parentDiv.querySelectorAll('.circle');
-  const circleUser = parentDiv.querySelector('#' + User.firstname + '_' + User.lastname);
+  const circleUser = parentDiv.querySelector('#activeUser');
   let maxResa = 4;
   if (parentDiv.classList.contains('big_rectangle')){
     maxResa = 5;
