@@ -86,13 +86,13 @@ def loginPOST():
     if len(rows) == 0:
         cur.close()
         conn.close()
-        return "Utilisateur non trouvé.", 400
+        return jsonify({"message": "User not found"}), 400
 
     # Vérifier le mot de passe
     if not check_password_hash(rows[0][0], password):
         cur.close()
         conn.close()
-        return "Mot de passe incorrect.", 400
+        return jsonify({"message": "Invalid password"}), 400
 
     # Générer un UUID pour le cookie
     token = str(uuid.uuid4())
@@ -115,7 +115,7 @@ def loginPOST():
     response = make_response(jsonify({"domaine": rows[0][1]}))
     response.set_cookie('authToken', token, httponly=False, max_age=60 * 60 * 24 * 7 * 52)
 
-    return response
+    return response, 200
 
 @app.route('/signup', methods=['POST'])
 def signupPOST():
@@ -227,7 +227,7 @@ def signupPOST():
     response = make_response(jsonify({"domaine": domaine_name}))
     response.set_cookie('authToken', token, httponly=False, max_age=60 * 60 * 24 * 7 * 52)
 
-    return response
+    return response, 200
 
 @app.route('/')
 def home():
@@ -252,7 +252,8 @@ def login():
 def signup():
 
     domaine = request.args.get('domaine', default='', type=str)
-    return render_template('signup.html', domaine=domaine)
+    email = request.args.get('email', default='', type=str)
+    return render_template('signup.html', domaine=domaine, email=email)
 
 @app.route('/test/')
 def home_test():
