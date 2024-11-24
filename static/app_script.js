@@ -661,7 +661,7 @@ async function fetchReservations(allRectanglesInCreation) {
 
       createNumResa(rectangle, resaRectangle);
 
-      if (resaRectangle.length === 0){
+      if (resaRectangle.length === 0 || ((resaRectangle.length === 1) && (resaRectangle[0].user_id === User.id))){
         rectangle.style.backgroundColor = '#FFA178';
       }
 
