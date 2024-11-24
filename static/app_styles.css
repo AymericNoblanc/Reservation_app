@@ -219,8 +219,10 @@ nav .animation {
   font-size: 18px;
   display: flex;
   justify-content: center;
+  text-transform: uppercase;
   align-items: center;
   transition: width 0.3s ease, height 0.3s ease, left 0.3s ease, right 0.3s ease, top 0.3s ease, bottom 0.3s ease;
+  z-index: 0;
 }
 
 .self-circle {
@@ -242,10 +244,16 @@ nav .animation {
   border: 3px solid #3ab638; /* Dark gray border */
 }
 
-.nbMoreResa{
+.nbResa{
+  position: absolute;
   color: #606060;
   background-color: #d8d8db;
   font-weight: bold;
+  width: 25px;
+  height: 25px;
+  font-size: 15px;
+  right: 10px;
+  z-index: 1;
 }
 
 .selectUser {
@@ -254,6 +262,7 @@ nav .animation {
   border-radius: 50%;
   position: absolute;
   font-size: 22px;
+  text-transform: uppercase;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -263,6 +272,46 @@ nav .animation {
   margin-left: 112%;
 }
 
+
+
+
+
+.main{
+  margin-bottom: auto;
+}
+
+nav{
+  margin-top: 10px;
+}
+
+.week{
+  font-size: 32px;
+  margin-bottom: 25px;
+  margin-top: 80px;
+}
+
+.days {
+  flex-direction: column;
+  gap: 20px;
+}
+
+.top, .bottom{
+  margin: 0 auto !important;
+  flex-direction: row;
+}
+
+.big_rectangle {
+  width: 320px;
+  height: 130px;
+}
+
+.small_rectangle {
+  width: 150px;
+  height: 130px;
+}
+
+
+/*
 @media (max-width: 1840px) {
 
   .week{
@@ -341,3 +390,4 @@ nav .animation {
     height: 130px;
   }
 }
+*/

@@ -18,7 +18,7 @@ document.getElementById('login-form').addEventListener('submit', async (event) =
 
         const result = await response.json();
         if (response.ok) {
-            window.location.href = "/" + result.domaine + "/app/"; // Redirige vers la page d'accueil (ou autre)
+            window.location.href = "/" + result.domaine; // Redirige vers la page d'accueil (ou autre)
         } else {
             alert(result); // Affiche l'erreur
         }

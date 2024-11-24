@@ -1,9 +1,8 @@
-const BASE_URL = URLformator(window.location.href);
+const BASE_URL = window.location.href;
 
 let switchSiteSelected = null;
 
 let User = null;
-let UserNum = -1;
 
 let sitesData = null;
 let usersData = null;
@@ -122,6 +121,14 @@ async function createReservation(userId, siteId, date) {
     });
 
     const data = await response.json();
+
+    const newReservation = {
+      user_id: userId,
+      date: date
+    };
+
+    reservationData.push(newReservation);
+
     console.log('Réservation créée:', data);
   } catch (error) {
     console.error('Erreur lors de la création de la réservation:', error);
@@ -147,6 +154,14 @@ async function deleteReservation(userId, siteId, date) {
     });
 
     const data = await response.json();
+
+    const userIdToRemove = userId;
+    const dateToRemove = date;
+
+    reservationData = reservationData.filter(reservation =>
+        !(reservation.user_id === userIdToRemove && reservation.date === dateToRemove)
+    )
+
     console.log('Réservation supprimée:', data);
   } catch (error) {
     console.error('Erreur lors de la suppression de la réservation:', error);
@@ -249,7 +264,7 @@ function createReservationCircle(user, rectangle) {
   const circle = document.createElement('div');
   circle.classList.add('circle'); // Ajoute la classe pour le style
 
-  let leftPosition = rectangle.querySelectorAll(".circle").length;
+  let leftPosition = rectangle.querySelectorAll(".circle").length - 1;
 
   if(rectangle.className.includes("big_rectangle")){
     leftPosition = leftPosition * 45 + 15;
@@ -300,25 +315,20 @@ function createRectangle(classes, dayOfWeek) {
   return rectangle;
 }
 
-function createNumMoreResa(rectangle, resaRectangle, maxResa) {
-  const nbMoreResa = document.createElement('div');
-  nbMoreResa.classList.add('nbMoreResa');
-  nbMoreResa.classList.add('circle');
+function createNumResa(rectangle, resaRectangle) {
+  const nbResa = document.createElement('div');
+  nbResa.classList.add('nbResa');
+  nbResa.classList.add('circle');
 
-  nbMoreResa.textContent = '+' + (resaRectangle.length - maxResa);
+  nbResa.textContent = resaRectangle.length;
 
-  if (maxResa > 9){
-    nbMoreResa.style.width = '45px';
-    nbMoreResa.style.borderRadius = '40%';
+  if (resaRectangle.length > 99){
+    nbResa.style.width = '35px';
+    nbResa.style.borderRadius = '30%';
+    nbResa.style.right = '7px';
   }
 
-  if(rectangle.className.includes("big_rectangle")){
-    nbMoreResa.style.left = "240px";
-  }else{
-    nbMoreResa.style.left = "100px";
-  }
-
-  rectangle.appendChild(nbMoreResa);
+  rectangle.appendChild(nbResa);
 }
 
 // Gestion de l'ajout/enlevage d'une réservation
@@ -374,10 +384,12 @@ function lookupRectangleClick() {
 function lookupClick(event) {
 
   const rect = this.getBoundingClientRect();
-  const clickY = event.clientY - rect.top; // Y coordinate of the click relative to the top of the div
+  const clickY = event.clientY - rect.top;
+  const clickX = event.clientX - rect.left;// Y coordinate of the click relative to the top of the div
   const divHeight = rect.height;
+  const divWidth = rect.width;
 
-  if (clickY < divHeight / 1.7) {
+  if ((clickY < divHeight / 2.5) && (clickX > divWidth / 1.53)) {
     return;
   }
 
@@ -431,26 +443,28 @@ function lookupClick(event) {
 
   lookupRectangle.appendChild(reservationListDiv);
 
-  reservationData.forEach(reservation => {
-    if (reservation.date === this.id && reservation.user_id !== User.id) {
+  const resaRectangle = reservationData.filter(reservation => reservation.date === lookupRectangle.id);
 
-      let container = document.createElement('div');
-      container.classList.add('lookup_list_element');
+  createNumResa(lookupRectangle, resaRectangle);
 
-      // Créer un div pour le cercle
-      let circle = createReservationCircle(usersData.find(user => user.id === reservation.user_id), lookupRectangle);
+  resaRectangle.forEach(reservation => {
 
-      let reservationName = document.createElement('div');
-      reservationName.classList.add('lookup_list_name');
-      reservationName.textContent = usersData.find(user => user.id === reservation.user_id).firstname + ' ' + usersData.find(user => user.id === reservation.user_id).lastname;
-      reservationName.style.animation = 'growlookup_list_name 0.3s ease-out';
+    let container = document.createElement('div');
+    container.classList.add('lookup_list_element');
 
-      container.appendChild(circle);
-      container.appendChild(reservationName);
-      // Ajouter le cercle au rectangle
-      reservationListDiv.appendChild(container);
-    }
-  });
+    // Créer un div pour le cercle
+    let circle = createReservationCircle(usersData.find(user => user.id === reservation.user_id), lookupRectangle);
+
+    let reservationName = document.createElement('div');
+    reservationName.classList.add('lookup_list_name');
+    reservationName.textContent = usersData.find(user => user.id === reservation.user_id).firstname + ' ' + usersData.find(user => user.id === reservation.user_id).lastname;
+    reservationName.style.animation = 'growlookup_list_name 0.3s ease-out';
+
+    container.appendChild(circle);
+    container.appendChild(reservationName);
+    // Ajouter le cercle au rectangle
+    reservationListDiv.appendChild(container);
+  })
 
   setTimeout(() => {
 
@@ -502,16 +516,42 @@ function checkCircleClick(event) {
   event.currentTarget.classList.toggle('self-circle-active');
 
   const site = sitesData.find(site => site.name === switchSiteSelected.name);
-  const user = usersData.find(user => user.firstname === User.firstname && user.lastname === User.lastname);
+
+  const parentDiv = this.parentElement;
+  const numResa = parentDiv.querySelector('.nbResa');
+  const listOfCircles = parentDiv.querySelectorAll('.circle');
+  const circleUser = parentDiv.querySelector('#' + User.firstname + '_' + User.lastname);
+  let maxResa = 4;
+  if (parentDiv.classList.contains('big_rectangle')){
+    maxResa = 5;
+  }
 
   if (this.classList.contains('self-circle-active')){
     // Create reservation
-    createReservation(user.id, site.id, this.parentElement.id);
-
+    createReservation(User.id, site.id, this.parentElement.id);
+    numResa.textContent = parseInt(numResa.textContent) + 1;
+    if (listOfCircles.length -1 < maxResa){
+      const circle = createReservationCircle(User, parentDiv);
+      parentDiv.appendChild(circle);
+    }
   }else{
     // Delete reservation
-    deleteReservation(user.id, site.id, this.parentElement.id);
+    deleteReservation(User.id, site.id, this.parentElement.id);
+    numResa.textContent = parseInt(numResa.textContent) - 1;
+    if (circleUser !== null){
+      listOfCircles.forEach(circle => {
+        if (!circle.classList.contains('nbResa')) {
+          circle.remove();
+        }
+      });
 
+      const resaRectangle = reservationData.filter(reservation => reservation.date === parentDiv.id && reservation.user_id !== User.id);
+
+      resaRectangle.forEach(reservation => {
+        const circle = createReservationCircle(usersData.find(user => user.id === reservation.user_id), parentDiv);
+        parentDiv.appendChild(circle);
+      });
+    }
   }
 }
 
@@ -605,7 +645,9 @@ async function fetchReservations(allRectanglesInCreation) {
     const users = await getUsers();
 
     allRectanglesInCreation.forEach(rectangle => {
-      const resaRectangle = reservationData.filter(reservation => reservation.date === rectangle.id && reservation.user_id !== User.id);
+      const resaRectangle = reservationData.filter(reservation => reservation.date === rectangle.id);
+
+      createNumResa(rectangle, resaRectangle);
 
       if (resaRectangle.length === 0){
         rectangle.style.backgroundColor = '#FFA178';
@@ -623,9 +665,7 @@ async function fetchReservations(allRectanglesInCreation) {
 
         rectangle.appendChild(circle);
       });
-      if (resaRectangle.length > maxResa) {
-        createNumMoreResa(rectangle, resaRectangle, maxResa);
-      }
+
       const checkCircle = rectangle.querySelector('.self-circle');
       if (reservationData.find(reservation => reservation.date === rectangle.id && reservation.user_id === User.id)) {
         checkCircle.classList.add('self-circle-active');

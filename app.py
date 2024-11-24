@@ -242,16 +242,17 @@ def login():
     domaine = check_auth_token(request.cookies.get('authToken'))
 
     if domaine is not False:
-        return redirect('/' + domaine + '/app/')
+        return redirect('/' + domaine)
 
     return render_template('login.html')
 
 @app.route('/signup/')
 def signup():
 
-    return render_template('signup.html')
+    domaine = request.args.get('domaine', default='', type=str)
+    return render_template('signup.html', domaine=domaine)
 
-@app.route('/test/app/')
+@app.route('/test/')
 def home_test():
 
     if check_auth_token(request.cookies.get('authToken')) is not False:
@@ -259,16 +260,23 @@ def home_test():
 
     return redirect('/login/')
 
-@app.route('/noblanc/app/')
-def noblanc_test():
+@app.route('/noblanc/')
+def home_noblanc():
 
     if check_auth_token(request.cookies.get('authToken')) is not False:
         return render_template('noblanc_app.html')
 
     return redirect('/login/')
 
-#Route pour récupérer tous les travailleurs
-#Pour tester : http://127.0.0.1:5000/users
+@app.route('/teamsquare/')
+def home_teamsquare():
+
+    if check_auth_token(request.cookies.get('authToken')) is not False:
+        return render_template('teamsquare_app.html')
+
+    return redirect('/login/')
+
+#Route pour récupérer les informations de l'utilisateur connecté
 @app.route('/find-cookie/<cookie>', methods=['GET'])
 def get_user_from_cookie(cookie):
     conn = get_db_connection()
