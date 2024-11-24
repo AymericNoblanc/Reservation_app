@@ -242,7 +242,7 @@ def login():
     domaine = check_auth_token(request.cookies.get('authToken'))
 
     if domaine is not False:
-        return redirect('/' + domaine + '/app/')
+        return redirect('/' + domaine)
 
     return render_template('login.html')
 
@@ -251,7 +251,7 @@ def signup():
 
     return render_template('signup.html')
 
-@app.route('/test/app/')
+@app.route('/test/')
 def home_test():
 
     if check_auth_token(request.cookies.get('authToken')) is not False:
@@ -259,7 +259,7 @@ def home_test():
 
     return redirect('/login/')
 
-@app.route('/noblanc/app/')
+@app.route('/noblanc/')
 def noblanc_test():
 
     if check_auth_token(request.cookies.get('authToken')) is not False:

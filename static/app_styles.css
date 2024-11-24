@@ -242,10 +242,15 @@ nav .animation {
   border: 3px solid #3ab638; /* Dark gray border */
 }
 
-.nbMoreResa{
+.nbResa{
+  position: absolute;
   color: #606060;
   background-color: #d8d8db;
   font-weight: bold;
+  width: 25px;
+  height: 25px;
+  font-size: 15px;
+  right: 10px;
 }
 
 .selectUser {
