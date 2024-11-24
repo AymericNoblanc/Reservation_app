@@ -122,6 +122,14 @@ async function createReservation(userId, siteId, date) {
     });
 
     const data = await response.json();
+
+    const newReservation = {
+      user_id: userId,
+      date: date
+    };
+
+    reservationData.push(newReservation);
+
     console.log('Réservation créée:', data);
   } catch (error) {
     console.error('Erreur lors de la création de la réservation:', error);
@@ -147,6 +155,14 @@ async function deleteReservation(userId, siteId, date) {
     });
 
     const data = await response.json();
+
+    const userIdToRemove = userId;
+    const dateToRemove = date;
+
+    reservationData = reservationData.filter(reservation =>
+        !(reservation.user_id === userIdToRemove && reservation.date === dateToRemove)
+    )
+
     console.log('Réservation supprimée:', data);
   } catch (error) {
     console.error('Erreur lors de la suppression de la réservation:', error);
