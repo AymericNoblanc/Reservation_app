@@ -425,7 +425,7 @@ def create_reservation(domaine):
         cur.close()
         conn.close()
 
-        response = jsonify({"message": "Reservation doesn't already exists for this worker on this date"})
+        response = jsonify({"message": "Reservation  already exists for this worker on this date"})
         response.headers.add('Access-Control-Allow-Origin', '*')
 
         return response, 400
