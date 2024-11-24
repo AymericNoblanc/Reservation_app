@@ -8,10 +8,9 @@ let sitesData = null;
 let usersData = null;
 let reservationData = null;
 
-const weekLimit = 52;
+const weekLimit = 12
 let currentWeek = 0;
 let dayRectangle = new Date();
-dayRectangle.setDate(dayRectangle.getDate()-7);
 
 // API call :
 
@@ -218,7 +217,6 @@ function sitesSelection() {
 
       currentWeek = 0;
       dayRectangle = new Date();
-      dayRectangle.setDate(dayRectangle.getDate()-7);
 
       switchSiteSelected = sitesData[this.id];
 
@@ -286,8 +284,6 @@ function createReservationCircle(user, rectangle) {
 
 function createRectangle(classes, dayOfWeek) {
 
-  dayRectangle.setDate(dayRectangle.getDate()+1);
-
   const date = dayRectangle.toLocaleString('fr-Fr', { month: "numeric", day: "numeric" });
   const formattedDate = dayRectangle.getFullYear() + '-' +
       String(dayRectangle.getMonth() + 1).padStart(2, '0') + '-' +
@@ -313,6 +309,8 @@ function createRectangle(classes, dayOfWeek) {
   rectangle.appendChild(checkCircle);
 
   rectangle.id = formattedDate;
+
+  dayRectangle.setDate(dayRectangle.getDate()+1);
 
   return rectangle;
 }
@@ -547,7 +545,7 @@ function checkCircleClick(event) {
         }
       });
 
-      const resaRectangle = reservationData.filter(reservation => reservation.date === parentDiv.id && reservation.user_id !== User.id);
+      const resaRectangle = reservationData.filter(reservation => reservation.date === parentDiv.id && reservation.user_id !== User.id).slice(0, maxResa);
 
       resaRectangle.forEach(reservation => {
         const circle = createReservationCircle(usersData.find(user => user.id === reservation.user_id), parentDiv);
@@ -568,7 +566,7 @@ function weekTemplate (){
     dayRectangle.setDate(dayRectangle.getDate() +2);
   }
 
-  dayRectangle.setDate((dayRectangle.getDate() - (dayRectangle.getDay() + 6) % 7)+7);
+  dayRectangle.setDate((dayRectangle.getDate() - (dayRectangle.getDay() + 6) % 7));
 
   // Créer l'élément principal contenant la semaine et les rectangles
   const mainDiv = document.createElement("div");
@@ -584,7 +582,6 @@ function weekTemplate (){
   daysDiv.classList.add("days");
 
   // Créer le grand rectangle
-  dayRectangle.setDate(dayRectangle.getDate()-1);
   const bigRectangle = createRectangle(["big_rectangle"], "Lundi");
 
   // Créer le conteneur pour les petits rectangles
@@ -638,7 +635,14 @@ async function fetchReservations(allRectanglesInCreation) {
     let weekRectangle = new Date();
     let dayOfWeek = weekRectangle.getDay(); // 0 = Dimanche, 1 = Lundi, etc.
     let diffToMonday = (dayOfWeek + 6) % 7; // Trouver le décalage pour revenir à lundi (si on est dimanche, ce sera 6)
-    weekRectangle.setDate(weekRectangle.getDate() - diffToMonday); // Revenir au lundi
+
+    if (dayOfWeek === 0) {
+      weekRectangle.setDate(weekRectangle.getDate() + 1); // Revenir au lundi
+    }else if (dayOfWeek === 6){
+      weekRectangle.setDate(weekRectangle.getDate() + 2); // Revenir au lundi
+    }else{
+      weekRectangle.setDate(weekRectangle.getDate() - diffToMonday); // Revenir au lundi
+    }
 
     weekRectangle.setDate(weekRectangle.getDate() + 7 * (currentWeek-1));
     weekRectangle = weekRectangle.getFullYear() + '-' +
@@ -696,7 +700,6 @@ function createWeek () {
     rect.addEventListener('click', lookupClick);
   });
 
-
   fetchReservations(allRectanglesInCreation);
 
 }
@@ -715,7 +718,6 @@ window.onload = async function () {
   document.querySelectorAll('.main').forEach(e => e.remove());
   currentWeek = 0;
   dayRectangle = new Date();
-  dayRectangle.setDate(dayRectangle.getDate()-7);
 
   createWeek();
   createWeek();
