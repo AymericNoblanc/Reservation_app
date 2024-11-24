@@ -74,7 +74,12 @@ body {
 .input-group textarea {
     resize: none;
     height: 40px;
-    width: 40%;
+    width: 50%;
+}
+
+input:disabled, textarea:disabled {
+    background-color: #e0e0e0; /* Change to your desired color */
+    color: #616161; /* Optional: change text color */
 }
 
 /* Button */

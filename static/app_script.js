@@ -3,7 +3,6 @@ const BASE_URL = window.location.href;
 let switchSiteSelected = null;
 
 let User = null;
-let UserNum = -1;
 
 let sitesData = null;
 let usersData = null;
@@ -324,8 +323,9 @@ function createNumResa(rectangle, resaRectangle) {
   nbResa.textContent = resaRectangle.length;
 
   if (resaRectangle.length > 99){
-    nbResa.style.width = '45px';
-    nbResa.style.borderRadius = '40%';
+    nbResa.style.width = '35px';
+    nbResa.style.borderRadius = '30%';
+    nbResa.style.right = '7px';
   }
 
   rectangle.appendChild(nbResa);
@@ -443,26 +443,28 @@ function lookupClick(event) {
 
   lookupRectangle.appendChild(reservationListDiv);
 
-  reservationData.forEach(reservation => {
-    if (reservation.date === this.id) {
+  const resaRectangle = reservationData.filter(reservation => reservation.date === lookupRectangle.id);
 
-      let container = document.createElement('div');
-      container.classList.add('lookup_list_element');
+  createNumResa(lookupRectangle, resaRectangle);
 
-      // Créer un div pour le cercle
-      let circle = createReservationCircle(usersData.find(user => user.id === reservation.user_id), lookupRectangle);
+  resaRectangle.forEach(reservation => {
 
-      let reservationName = document.createElement('div');
-      reservationName.classList.add('lookup_list_name');
-      reservationName.textContent = usersData.find(user => user.id === reservation.user_id).firstname + ' ' + usersData.find(user => user.id === reservation.user_id).lastname;
-      reservationName.style.animation = 'growlookup_list_name 0.3s ease-out';
+    let container = document.createElement('div');
+    container.classList.add('lookup_list_element');
 
-      container.appendChild(circle);
-      container.appendChild(reservationName);
-      // Ajouter le cercle au rectangle
-      reservationListDiv.appendChild(container);
-    }
-  });
+    // Créer un div pour le cercle
+    let circle = createReservationCircle(usersData.find(user => user.id === reservation.user_id), lookupRectangle);
+
+    let reservationName = document.createElement('div');
+    reservationName.classList.add('lookup_list_name');
+    reservationName.textContent = usersData.find(user => user.id === reservation.user_id).firstname + ' ' + usersData.find(user => user.id === reservation.user_id).lastname;
+    reservationName.style.animation = 'growlookup_list_name 0.3s ease-out';
+
+    container.appendChild(circle);
+    container.appendChild(reservationName);
+    // Ajouter le cercle au rectangle
+    reservationListDiv.appendChild(container);
+  })
 
   setTimeout(() => {
 

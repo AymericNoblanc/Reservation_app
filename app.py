@@ -249,7 +249,8 @@ def login():
 @app.route('/signup/')
 def signup():
 
-    return render_template('signup.html')
+    domaine = request.args.get('domaine', default='', type=str)
+    return render_template('signup.html', domaine=domaine)
 
 @app.route('/test/')
 def home_test():
@@ -260,10 +261,18 @@ def home_test():
     return redirect('/login/')
 
 @app.route('/noblanc/')
-def noblanc_test():
+def home_noblanc():
 
     if check_auth_token(request.cookies.get('authToken')) is not False:
         return render_template('noblanc_app.html')
+
+    return redirect('/login/')
+
+@app.route('/teamsquare/')
+def home_teamsquare():
+
+    if check_auth_token(request.cookies.get('authToken')) is not False:
+        return render_template('teamsquare_app.html')
 
     return redirect('/login/')
 
