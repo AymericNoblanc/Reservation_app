@@ -90,6 +90,8 @@ def loginPOST():
 
     # Vérifier le mot de passe
     if not check_password_hash(rows[0][0], password):
+        cur.close()
+        conn.close()
         return "Mot de passe incorrect.", 400
 
     # Générer un UUID pour le cookie
