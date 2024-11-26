@@ -251,6 +251,11 @@ def login():
 @app.route('/signup/')
 def signup():
 
+    domaine = check_auth_token(request.cookies.get('authToken'))
+
+    if domaine is not False:
+        return redirect('/' + domaine)
+
     domaine = request.args.get('domaine', default='', type=str)
     email = request.args.get('email', default='', type=str)
     return render_template('signup.html', domaine=domaine, email=email)
