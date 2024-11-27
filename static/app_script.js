@@ -249,12 +249,53 @@ function handleInfiniteScroll () {
   if (currentWeek === weekLimit) {
     removeInfiniteScroll();
   }
+
+  const scrollLeft = weekContainer.scrollLeft; // Position actuelle du scroll
+  const itemWidth = weekContainer.clientWidth; // Largeur d'un élément (suppose largeur fixe)
+  currentIndex = Math.round(scrollLeft / itemWidth); // Trouver l'élément le plus proche
 }
 weekContainer.addEventListener("scroll", handleInfiniteScroll);
 
 function removeInfiniteScroll () {
   window.removeEventListener("scroll", handleInfiniteScroll);
 }
+
+let currentIndex = 0;
+
+function scrollToIndex(index) {
+  const items = document.querySelectorAll('.container > div');
+
+  console.log(items);
+  console.log(index);
+  // Ajuster l'index pour rester dans les limites
+  if (index < 0) index = 0;
+  console.log(index);
+  if (index >= items.length) index = items.length - 1;
+  console.log(index);
+
+  // Calculer la position à atteindre
+  const scrollPosition = index * weekContainer.clientWidth;
+
+  // Faire défiler de manière fluide
+  weekContainer.scrollTo({
+    left: scrollPosition,
+    behavior: 'smooth',
+  });
+
+  currentIndex = index; // Mettre à jour l'index actuel
+}
+
+const leftButton = document.querySelector('.scroll-button.left');
+leftButton.addEventListener('click', () => {
+  console.log("go to gauche");
+  scrollToIndex(currentIndex - 1);
+});
+
+const rightButton = document.querySelector('.scroll-button.right');
+rightButton.addEventListener('click', () => {
+  console.log("go to droite");
+  scrollToIndex(currentIndex + 1);
+});
 
 // Création d'éléments
 

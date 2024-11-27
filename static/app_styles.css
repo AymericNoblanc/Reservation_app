@@ -272,6 +272,18 @@ nav .animation {
   margin-left: 112%;
 }
 
+.scroll-button {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  color: grey;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.2em;
+}
+
 
 
 
@@ -309,7 +321,6 @@ nav{
   width: 150px;
   height: 130px;
 }
-
 
 /*
 @media (max-width: 1840px) {
