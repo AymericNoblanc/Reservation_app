@@ -609,13 +609,13 @@ function scrollToIndex(index) {
   currentIndex = index; // Mettre à jour l'index actuel
 }
 
-const leftButton = document.body.querySelector('.scroll-button-left');
+let leftButton = document.getElementById("scroll-button-left");
 console.log(leftButton);
 leftButton.addEventListener('click', () => {
   scrollToIndex(currentIndex - 1);
 });
 
-const rightButton = document.body.querySelector('.scroll-button-right');
+let rightButton = document.getElementById("scroll-button-right");
 console.log(rightButton);
 rightButton.addEventListener('click', () => {
   scrollToIndex(currentIndex + 1);
