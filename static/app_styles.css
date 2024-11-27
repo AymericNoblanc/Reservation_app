@@ -243,6 +243,20 @@ nav .animation {
   border: 3px solid #3ab638; /* Dark gray border */
 }
 
+.self-circle-old {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 23px;
+  height: 23px;
+  background-color: rgba(89, 88, 88, 0.40);
+  border: 3px solid rgba(89, 88, 88, 0.20);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .nbResa{
   position: absolute;
   color: #606060;
@@ -282,6 +296,29 @@ nav .animation {
   justify-content: center;
   align-items: center;
   font-size: 1.2em;
+}
+
+/* Conteneur des indicateurs */
+.scroll-indicator {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px; /* Espace au-dessus */
+}
+
+/* Style des points */
+.scroll-indicator .indicator {
+  width: 10px; /* Taille du point */
+  height: 10px; /* Taille du point */
+  margin: 0 10px; /* Espacement entre les points */
+  background-color: #ccc; /* Couleur des points inactifs */
+  border-radius: 50%; /* Cercle parfait */
+  transition: background-color 0.3s ease; /* Animation pour le changement de couleur */
+}
+
+/* Point actif */
+.scroll-indicator .indicator.active {
+  background-color: #606060; /* Couleur du point actif */
 }
 
 
