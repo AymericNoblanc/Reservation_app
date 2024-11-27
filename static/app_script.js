@@ -589,7 +589,6 @@ function removeInfiniteScroll () {
 }
 
 let currentIndex = 0;
-
 function scrollToIndex(index) {
   const items = document.querySelectorAll('.container > div');
 
@@ -609,14 +608,12 @@ function scrollToIndex(index) {
   currentIndex = index; // Mettre à jour l'index actuel
 }
 
-let leftButton = document.getElementById("scroll-button-left");
-console.log(leftButton);
+const leftButton = document.querySelector(".scroll-button-left");
 leftButton.addEventListener('click', () => {
   scrollToIndex(currentIndex - 1);
 });
 
-let rightButton = document.getElementById("scroll-button-right");
-console.log(rightButton);
+const rightButton = document.querySelector(".scroll-button-right");
 rightButton.addEventListener('click', () => {
   scrollToIndex(currentIndex + 1);
 });
