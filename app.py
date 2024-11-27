@@ -197,12 +197,14 @@ def signupPOST():
     credential_id = row[0]
     user_id = row[1]
 
+    initial = str(firstname[0]) + str(lastname[0])
+
     query = '''
         INSERT INTO
-            %s (id, firstname, lastname, initials
+            %s (id, firstname, lastname, initial)
         VALUES
             ('%s', '%s', '%s', '%s')
-    ''' % (domaineUser, user_id, firstname, lastname, firstname[0] + lastname[0])
+    ''' % (domaineUser, user_id, firstname, lastname, initial)
     cur.execute(query)
     conn.commit()
 
