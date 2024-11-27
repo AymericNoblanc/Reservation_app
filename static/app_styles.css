@@ -593,7 +593,7 @@ input[type="range"]::-moz-range-thumb {
   position: relative;
   width: 20px; /* Plus petite largeur */
   height: 60px; /* Hauteur verticale */
-  border-radius: 5px;
+  border-radius: 10px;
 }
 
 .luminosity-bar input[type="range"] {
