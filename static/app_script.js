@@ -610,11 +610,13 @@ function scrollToIndex(index) {
 }
 
 const leftButton = document.body.querySelector('.scroll-button-left');
+console.log(leftButton);
 leftButton.addEventListener('click', () => {
   scrollToIndex(currentIndex - 1);
 });
 
 const rightButton = document.body.querySelector('.scroll-button-right');
+console.log(rightButton);
 rightButton.addEventListener('click', () => {
   scrollToIndex(currentIndex + 1);
 });
