@@ -199,10 +199,10 @@ def signupPOST():
 
     query = '''
         INSERT INTO
-            %s (id, firstname, lastname)
+            %s (id, firstname, lastname, initials
         VALUES
-            ('%s', '%s', '%s')
-    ''' % (domaineUser, user_id, firstname, lastname)
+            ('%s', '%s', '%s', '%s')
+    ''' % (domaineUser, user_id, firstname, lastname, firstname[0] + lastname[0])
     cur.execute(query)
     conn.commit()
 
@@ -316,8 +316,32 @@ def get_user_from_cookie(cookie):
 
     return response
 
+@app.route('/logout', methods=['POST'])
+def cookie_logout():
+    token = request.cookies.get('authToken')
+
+    if token:
+
+        conn = get_db_connection()
+        cur = conn.cursor()
+
+        query = '''
+            DELETE
+            FROM cookie
+            WHERE token = '%s'
+        ''' % (token)
+        cur.execute(query)
+        conn.commit()
+
+        cur.close()
+        conn.close()
+
+    # Supprimer le cookie
+    response = jsonify({"message": "Déconnexion réussie"})
+    response.delete_cookie('authToken')
+    return response
+
 #Route pour récupérer tous les travailleurs
-#Pour tester : http://127.0.0.1:5000/users
 @app.route('/<domaine>/users', methods=['GET'])
 def get_users(domaine):
     conn = get_db_connection()
@@ -327,12 +351,16 @@ def get_users(domaine):
 
     query = '''
         SELECT 
-            id,
-            firstname,
-            lastname,
-            color
+            d.id,
+            d.firstname,
+            d.lastname,
+            d.color,
+            d.initial,
+            c.email
         FROM 
-            %s
+            %s d
+        JOIN 
+            credential c on d.id = c.user_id
     ''' % (domaineUser)
     cur.execute(query)
     rows = cur.fetchall()
@@ -343,7 +371,9 @@ def get_users(domaine):
             "id": row[0],
             "firstname": row[1],
             "lastname": row[2],
-            "color": row[3]
+            "color": row[3],
+            "initial": row[4],
+            "email": row[5]
         })
 
     cur.close()
@@ -355,7 +385,6 @@ def get_users(domaine):
     return response
 
 #Route pour récupérer tous les sites
-#Pour tester : http://127.0.0.1:5000/sites
 @app.route('/<domaine>/sites', methods=['GET'])
 def get_sites(domaine):
     conn = get_db_connection()
@@ -391,16 +420,6 @@ def get_sites(domaine):
     return response
 
 #Route pour créer une réservation
-#Pour tester en curl:
-'''
-curl -X POST http://localhost:5000/reservations \
--H "Content-Type: application/json" \
--d '{
-  "user_id": "c23d1f3a-b967-4321-b521-c68a24d2cb9b",
-  "site_id": "f09a4628-5b67-4445-a266-130177afaf98",
-  "date": "2024-10-25"
-}'
-'''
 @app.route('/<domaine>/reservations', methods=['POST'])
 def create_reservation(domaine):
     user_id = request.json['user_id']
@@ -453,17 +472,41 @@ def create_reservation(domaine):
 
     return response, 201
 
+#Route pour changer les données d'un utilisateur
+@app.route('/<domaine>/updateUserData', methods=['POST'])
+def update_user_data(domaine):
+    user_id = request.json['user_id']
+    firstname = request.json['firstname']
+    lastname = request.json['lastname']
+    color = request.json['color']
+    initial = request.json['initial']
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    domaineUser = domaine + '_user'
+
+    # Créer la réservation
+    query = '''
+        UPDATE %s
+        SET firstname = '%s',
+            lastname = '%s',
+            color = '%s',
+            initial = '%s'
+        WHERE id = '%s';
+    ''' % (domaineUser, firstname, lastname, color, initial, user_id)
+    cur.execute(query)
+    conn.commit()
+
+    cur.close()
+    conn.close()
+
+    response = jsonify({"message": "User updated"})
+    response.headers.add('Access-Control-Allow-Origin', '*')
+
+    return response, 201
+
 #Annuler une réservation pour un employé
-#Pour tester en curl:
-'''
-curl -X DELETE http://localhost:5000/reservations \
--H "Content-Type: application/json" \
--d '{
-  "worker_id": "c23d1f3a-b967-4321-b521-c68a24d2cb9b",
-  "site_id": "f09a4628-5b67-4445-a266-130177afaf98",
-  "date": "2024-10-25"
-}'
-'''
 @app.route('/<domaine>/reservations', methods=['DELETE'])
 def cancel_reservation(domaine):
     user_id = request.json['user_id']
@@ -519,7 +562,6 @@ def cancel_reservation(domaine):
 
 
 #Lister toutes les réservations pour un site pour une semaine donnée
-#Pour tester : http://127.0.0.1:5000/reservations/site/f09a4628-5b67-4445-a266-130177afaf98/week?start_date=2024-10-01
 @app.route('/<domaine>/reservations/site/<site_id>/week', methods=['GET'])
 def get_reservations_for_site_in_a_week(domaine, site_id):
     start_date = request.args.get('start_date')

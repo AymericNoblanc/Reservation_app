@@ -71,7 +71,7 @@ async function getUsers() {
     User = usersData.find(user => user.id === User);
 
     selectUserCircle.style.backgroundColor = User.color;
-    selectUserCircle.textContent = User.firstname[0] + User.lastname[0];
+    selectUserCircle.textContent = User.initial;
 
     return usersData;
 
@@ -101,11 +101,11 @@ async function getWeekReservation(siteId, date) {
   }
 }
 
-async function createReservation(userId, siteId, date) {
+async function createReservation(siteId, date) {
   const url = BASE_URL + "reservations";
   
   const body = JSON.stringify({
-    user_id: userId,
+    user_id: User.id,
     site_id: siteId,
     date: date
   });
@@ -122,7 +122,7 @@ async function createReservation(userId, siteId, date) {
     const data = await response.json();
 
     const newReservation = {
-      user_id: userId,
+      user_id: User.id,
       date: date
     };
 
@@ -134,11 +134,11 @@ async function createReservation(userId, siteId, date) {
   }
 }
 
-async function deleteReservation(userId, siteId, date) {
+async function deleteReservation(siteId, date) {
   const url = BASE_URL + "reservations";
   
   const body = JSON.stringify({
-    user_id: userId,
+    user_id: User.id,
     site_id: siteId,
     date: date
   });
@@ -154,7 +154,7 @@ async function deleteReservation(userId, siteId, date) {
 
     const data = await response.json();
 
-    const userIdToRemove = userId;
+    const userIdToRemove = User.id;
     const dateToRemove = date;
 
     reservationData = reservationData.filter(reservation =>
@@ -167,11 +167,339 @@ async function deleteReservation(userId, siteId, date) {
   }
 }
 
+async function changeUserData(firstname, lastname, color, initial) {
+  const url = BASE_URL + "updateUserData";
+
+  const body = JSON.stringify({
+    user_id: User.id,
+    firstname: firstname,
+    lastname: lastname,
+    color: color,
+    initial: initial
+  });
+
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: body
+    });
+
+    const data = await response.json();
+
+    User.firstname = firstname;
+    User.lastname = lastname;
+    User.color = color;
+    User.initial = initial;
+
+    console.log('Utilisateur mis à jour:', data);
+  } catch (error) {
+    console.error('Erreur lors de la création de la réservation:', error);
+  }
+}
+
+async function logoutUser() {
+  try {
+    const response = await fetch('/logout', {
+      method: 'POST',
+      credentials: 'include'  // Inclure les cookies pour cette requête
+    })
+
+    const data = await response.json();
+
+    if (data.message === "Déconnexion réussie") {
+      // Si la déconnexion est réussie, rediriger l'utilisateur vers la page de login
+      window.location.href = '/login';  // Rediriger vers la page de login
+    } else {
+      console.log('Erreur de déconnexion');
+    }
+
+  } catch (error) {
+    console.error('Erreur:', error); // Gestion des erreurs
+  }
+}
+
 // Gestion du travailleur sélectionné
 
-const selectUserCircle = document.getElementById("selectUser");
+function closeProfileClick() {
+
+  const overlay = document.getElementById('overlayProfile');
+  overlay.remove();
+  const container = document.querySelector('.profile_rectangle');
+
+// Supprimer tous les enfants du conteneur
+  while (container.firstChild) {
+    container.removeChild(container.firstChild);
+  }
+
+  profileRectangle.style.boxShadow = '0 0 0 0';
+
+  profileRectangle.style.left = `${selectUserCircle.getBoundingClientRect().left + 20}px`;
+  profileRectangle.style.top = `${selectUserCircle.getBoundingClientRect().top + 20}px`;
+  profileRectangle.style.width = "0px";
+  profileRectangle.style.height = "0px";
+
+
+  setTimeout(() => {
+    profileRectangle.remove();
+  }, 300)
+}
+
+let profileRectangle
+
+let selectUserCircle = document.getElementById("selectUser");
 selectUserCircle.addEventListener("click", () => {
+
+  profileRectangle = document.createElement("div");
+  profileRectangle.classList.add("profile_rectangle");
+
+  profileRectangle.style.left = `${selectUserCircle.getBoundingClientRect().left + 20}px`;
+  profileRectangle.style.top = `${selectUserCircle.getBoundingClientRect().top + 20}px`;
+
+  const overlay = document.createElement("div");
+  overlay.id = 'overlayProfile';
+  overlay.style.width = '100%';
+  overlay.style.height = '100%';
+  overlay.style.pointerEvents = 'all';
+  overlay.style.backgroundColor = 'transparent';
+  overlay.style.display = 'block';
+  overlay.style.position = 'absolute';
+  overlay.style.top = '0';
+  overlay.style.left = '0';
+
+  overlay.addEventListener('click', null);
+  document.body.appendChild(overlay);
+
+  document.body.appendChild(profileRectangle);
+
+  setTimeout(() => {
+    profileRectangle.style.height = '550px';
+    profileRectangle.style.width = '320px';
+
+    profileRectangle.style.top = '30px';
+    profileRectangle.style.left = '35px';
+
+  }, 1)
+
+  setTimeout(() => {
+    createProfile();
+  }, 200)
+
 });
+
+function createProfile() {
+  // Créer l'en-tête
+  const profileHeader = document.createElement('div');
+  profileHeader.className = 'profile-header';
+
+  const profileTitle = document.createElement('span');
+  profileTitle.className = 'profile-title';
+  profileTitle.textContent = 'Profile';
+
+  const profileAvatar = document.createElement('div');
+  profileAvatar.className = 'profile-avatar';
+  profileAvatar.textContent = User.initial; // Initiales par défaut
+  profileAvatar.style.backgroundColor = User.color;
+
+  const closeButton = document.createElement('button');
+  closeButton.className = 'close-button';
+  closeButton.textContent = '✕';
+  closeButton.addEventListener('click', closeProfileClick);
+
+// Ajouter les éléments à l'en-tête
+  profileHeader.appendChild(profileTitle);
+  profileHeader.appendChild(profileAvatar);
+  profileHeader.appendChild(closeButton);
+
+// Créer le formulaire
+  const profileForm = document.createElement('div');
+  profileForm.className = 'profile-form';
+
+// Fonction pour créer un groupe de saisie
+  const createInputGroup = (labelText, id, value, readonly = false, maxLength = null) => {
+    const inputGroup = document.createElement('div');
+    inputGroup.className = 'input-group';
+
+    const label = document.createElement('label');
+    label.setAttribute('for', id);
+    label.textContent = labelText;
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.id = id;
+    input.name = id;
+    input.value = value;
+    if (readonly) input.readOnly = true;
+    if (maxLength) input.maxLength = maxLength;
+
+    inputGroup.appendChild(label);
+    inputGroup.appendChild(input);
+
+    return inputGroup;
+  };
+
+// Ajouter les champs de saisie
+  const initialsGroup = createInputGroup('Initiales', 'initials', User.initial, false, 2)
+  createColorSlider(initialsGroup)
+  profileForm.appendChild(initialsGroup);
+  profileForm.appendChild(createInputGroup('Prénom', 'first-name', User.firstname));
+  profileForm.appendChild(createInputGroup('Nom de famille', 'last-name', User.lastname));
+  profileForm.appendChild(createInputGroup('Email', 'email', User.email, true));
+
+// Créer la section d'actions
+  const profileActions = document.createElement('div');
+  profileActions.className = 'profile-actions';
+
+  const logoutButton = document.createElement('button');
+  logoutButton.className = 'logout-button';
+  logoutButton.textContent = 'Se déconnecter';
+  logoutButton.addEventListener('click', () => {
+    logoutUser();
+  });
+
+  const saveButton = document.createElement('button');
+  saveButton.className = 'save-button';
+  saveButton.textContent = 'Enregistrer';
+  saveButton.addEventListener('click', () => {
+    const hue = parseInt(profileForm.querySelector('#hue-slider').value);
+    const luminosity = profileForm.querySelector('#luminosity-slider').value;
+    changeUserData(
+        profileForm.querySelector('#first-name').value,
+        profileForm.querySelector('#last-name').value,
+        `hsl(${(hue + 60)}, 70%, ${luminosity}%)`,
+        profileForm.querySelector('#initials').value
+    );
+    document.querySelectorAll("#activeUser").forEach(element => {
+      element.style.backgroundColor = `hsl(${(hue + 60)}, 70%, ${luminosity}%)`;
+      element.textContent = profileForm.querySelector('#initials').value
+    });
+    selectUserCircle.style.backgroundColor = `hsl(${(hue + 60)}, 70%, ${luminosity}%)`;
+    selectUserCircle.textContent = profileForm.querySelector('#initials').value;
+    closeProfileClick();
+  });
+
+// Ajouter les boutons à la section d'actions
+  profileActions.appendChild(logoutButton);
+  profileActions.appendChild(saveButton);
+
+// Ajouter tout au conteneur principal
+  profileRectangle.appendChild(profileHeader);
+  profileRectangle.appendChild(profileForm);
+  profileRectangle.appendChild(profileActions);
+
+  const initialsInput = document.getElementById('initials');
+
+// Fonction pour mettre à jour les initiales de l'avatar
+  function updateAvatarInitials() {
+    profileAvatar.textContent = initialsInput.value.toUpperCase(); // Mettre à jour le texte de l'avatar
+  }
+
+// Ajouter un écouteur d'événement pour l'input des initiales
+  initialsInput.addEventListener('input', updateAvatarInitials);
+
+// Initialiser l'avatar avec la valeur actuelle des initiales au chargement
+  updateAvatarInitials();
+
+}
+
+function createColorSlider(initialsGroup) {
+
+  const newContainer = document.createElement('div');
+  while (initialsGroup.firstChild) {
+    newContainer.appendChild(initialsGroup.firstChild);
+  }
+  initialsGroup.appendChild(newContainer);
+
+  initialsGroup.style.display = 'flex';
+  initialsGroup.style.flexDirection = 'row';
+  initialsGroup.style.alignItems = 'center';
+
+
+  const UserColorHSL = User.color.match(/hsl\((\d+),\s*(\d+)%?,\s*(\d+)%?\)/);
+
+  // Définir les constantes pour les valeurs initiales
+  const HUE_INITIAL_VALUE = parseInt(UserColorHSL[1]) - 60
+  const LUMINOSITY_INITIAL_VALUE = parseInt(UserColorHSL[3])
+
+  // Sélectionner ou créer le conteneur principal
+  const container = document.createElement('div');
+  container.classList.add('color-picker-container');
+
+  // Créer la barre de teinte
+  const colorBar = document.createElement('div');
+  colorBar.classList.add('color-bar');
+
+  const hueSlider = document.createElement('input');
+  hueSlider.type = 'range';
+  hueSlider.id = 'hue-slider';
+  hueSlider.min = '0';
+  hueSlider.max = '300';
+  hueSlider.value = HUE_INITIAL_VALUE;
+
+  colorBar.appendChild(hueSlider);
+
+  // Créer la barre de luminosité
+  const luminosityBar = document.createElement('div');
+  luminosityBar.classList.add('luminosity-bar');
+
+  const luminositySlider = document.createElement('input');
+  luminositySlider.type = 'range';
+  luminositySlider.id = 'luminosity-slider';
+  luminositySlider.min = '50';
+  luminositySlider.max = '70';
+  luminositySlider.value = LUMINOSITY_INITIAL_VALUE;
+
+  luminosityBar.appendChild(luminositySlider);
+
+  // Ajouter les éléments au conteneur principal
+  container.appendChild(colorBar);
+  container.appendChild(luminosityBar);
+
+  // Fonction pour mettre à jour la couleur d'aperçu
+  function updateColorPreview() {
+    const hue = parseInt(hueSlider.value);
+    const luminosity = luminositySlider.value;
+    // Intègre la luminosité
+    let avatar = document.body.querySelector(".profile-avatar");
+    avatar.style.backgroundColor = `hsl(${(hue + 60)}, 70%, ${luminosity}%)`; // Met à jour l'aperçu
+  }
+
+  function updateLuminosityBar() {
+    const hue = parseInt(hueSlider.value);
+    luminosityBar.style.background = `linear-gradient(to top, hsl(${(hue + 60)}, 70%, 40%), hsl(${(hue + 60)}, 70%, 80%))`;
+  }
+
+  function updateHueSlider() {
+    const luminosity = luminositySlider.value;
+    colorBar.style.background = `linear-gradient(to right,
+  hsl(60, 70%, ${luminosity}%),
+  hsl(120, 70%, ${luminosity}%),
+  hsl(180, 70%, ${luminosity}%),
+  hsl(240, 70%, ${luminosity}%),
+  hsl(300, 70%, ${luminosity}%),
+  hsl(360, 70%, ${luminosity}%)
+  )`;
+  }
+
+  // Écouteurs pour les sliders
+  hueSlider.addEventListener("input", () => {
+    updateColorPreview();
+    updateLuminosityBar();
+  });
+  luminositySlider.addEventListener("input", () => {
+    updateColorPreview();
+    updateHueSlider();
+  });
+
+  // Initialiser la couleur
+
+  updateLuminosityBar();
+  updateHueSlider();
+
+  initialsGroup.appendChild(container);
+}
 
 // Gestion du slide des sites
 
@@ -249,12 +577,53 @@ function handleInfiniteScroll () {
   if (currentWeek === weekLimit) {
     removeInfiniteScroll();
   }
+
+  const scrollLeft = weekContainer.scrollLeft; // Position actuelle du scroll
+  const itemWidth = weekContainer.clientWidth; // Largeur d'un élément (suppose largeur fixe)
+  currentIndex = Math.round(scrollLeft / itemWidth); // Trouver l'élément le plus proche
 }
 weekContainer.addEventListener("scroll", handleInfiniteScroll);
 
 function removeInfiniteScroll () {
   window.removeEventListener("scroll", handleInfiniteScroll);
 }
+
+let currentIndex = 0;
+
+function scrollToIndex(index) {
+  const items = document.querySelectorAll('.container > div');
+
+  console.log(items);
+  console.log(index);
+  // Ajuster l'index pour rester dans les limites
+  if (index < 0) index = 0;
+  console.log(index);
+  if (index >= items.length) index = items.length - 1;
+  console.log(index);
+
+  // Calculer la position à atteindre
+  const scrollPosition = index * weekContainer.clientWidth;
+
+  // Faire défiler de manière fluide
+  weekContainer.scrollTo({
+    left: scrollPosition,
+    behavior: 'smooth',
+  });
+
+  currentIndex = index; // Mettre à jour l'index actuel
+}
+
+const leftButton = document.querySelector('.scroll-button.left');
+leftButton.addEventListener('click', () => {
+  console.log("go to gauche");
+  scrollToIndex(currentIndex - 1);
+});
+
+const rightButton = document.querySelector('.scroll-button.right');
+rightButton.addEventListener('click', () => {
+  console.log("go to droite");
+  scrollToIndex(currentIndex + 1);
+});
 
 // Création d'éléments
 
@@ -272,7 +641,7 @@ function createReservationCircle(user, rectangle) {
 
   // Appliquer la position gauche (left) au cercle pour le décaler
   circle.style.left = `${leftPosition}px`;
-  circle.textContent = user.firstname[0] + user.lastname[0];
+  circle.textContent = user.initial;
 
   circle.style.backgroundColor = user.color;
   if (user.id === User.id){
@@ -336,7 +705,7 @@ function createNumResa(rectangle, resaRectangle) {
 let lookupRectangle;
 function lookupRectangleClick() {
 
-  const overlay = document.getElementById('overlay');
+  const overlay = document.getElementById('overlayLookup');
   overlay.remove();
 
   const formerRectangle = weekContainer.querySelector(`[id='${lookupRectangle.id}']`);
@@ -377,7 +746,6 @@ function lookupRectangleClick() {
 
   setTimeout(() => {
     lookupRectangle.remove();
-    weekContainer.style.pointerEvents = 'auto';
   }, 300)
 }
 
@@ -386,10 +754,9 @@ function lookupClick(event) {
   const rect = this.getBoundingClientRect();
   const clickY = event.clientY - rect.top;
   const clickX = event.clientX - rect.left;// Y coordinate of the click relative to the top of the div
-  const divHeight = rect.height;
   const divWidth = rect.width;
 
-  if ((clickY < divHeight / 2.5) && (clickX > divWidth / 1.53)) {
+  if ((clickY < 50) && (clickX > divWidth - 50)) {
     return;
   }
 
@@ -415,7 +782,7 @@ function lookupClick(event) {
   lookupRectangle.appendChild(jourNum);
 
   const overlay = document.createElement("div");
-  overlay.id = 'overlay';
+  overlay.id = 'overlayLookup';
   overlay.style.width = '100%';
   overlay.style.height = '100%';
   overlay.style.pointerEvents = 'all';
@@ -471,19 +838,8 @@ function lookupClick(event) {
     lookupRectangle.style.height = '400px';
     lookupRectangle.style.width = '320px';
 
-    if (this.querySelector(".dayOfTheWeek").textContent === 'Lundi') {
-      lookupRectangle.style.top = `${this.getBoundingClientRect().top + 15}px`; // Adjust left position
-    } else if (this.querySelector(".dayOfTheWeek").textContent === 'Mardi') {
-      lookupRectangle.style.top = `${this.getBoundingClientRect().top - 135}px`; // Adjust left position
-    } else if (this.querySelector(".dayOfTheWeek").textContent === 'Mercredi') {
-      lookupRectangle.style.left = `${this.getBoundingClientRect().left - 170}px`; // Adjust left position
-      lookupRectangle.style.top = `${this.getBoundingClientRect().top - 135}px`; // Adjust left position
-    } else if (this.querySelector(".dayOfTheWeek").textContent === 'Jeudi') {
-      lookupRectangle.style.top = `${this.getBoundingClientRect().top - 285}px`; // Adjust left position
-    } else if (this.querySelector(".dayOfTheWeek").textContent === 'Vendredi') {
-      lookupRectangle.style.left = `${this.getBoundingClientRect().left - 170}px`; // Adjust left position
-      lookupRectangle.style.top = `${this.getBoundingClientRect().top - 285}px`; // Adjust left position
-    }
+    lookupRectangle.style.top = '165px';
+    lookupRectangle.style.left = '35px';
 
     reservationListDiv.style.marginTop = "28%";
 
@@ -528,7 +884,7 @@ function checkCircleClick(event) {
 
   if (this.classList.contains('self-circle-active')){
     // Create reservation
-    createReservation(User.id, site.id, this.parentElement.id);
+    createReservation(site.id, this.parentElement.id);
     numResa.textContent = parseInt(numResa.textContent) + 1;
     if (listOfCircles.length -1 < maxResa){
       const circle = createReservationCircle(User, parentDiv);
@@ -536,7 +892,7 @@ function checkCircleClick(event) {
     }
   }else{
     // Delete reservation
-    deleteReservation(User.id, site.id, this.parentElement.id);
+    deleteReservation(site.id, this.parentElement.id);
     numResa.textContent = parseInt(numResa.textContent) - 1;
     if (circleUser !== null){
       listOfCircles.forEach(circle => {
