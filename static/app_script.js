@@ -609,16 +609,14 @@ function scrollToIndex(index) {
   currentIndex = index; // Mettre à jour l'index actuel
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-  const leftButton = document.getElementById('scroll-button-left');
-  leftButton.addEventListener('click', () => {
-    scrollToIndex(currentIndex - 1);
-  });
+const leftButton = document.body.querySelector('.scroll-button-left');
+leftButton.addEventListener('click', () => {
+  scrollToIndex(currentIndex - 1);
+});
 
-  const rightButton = document.getElementById('scroll-button-right');
-  rightButton.addEventListener('click', () => {
-    scrollToIndex(currentIndex + 1);
-  });
+const rightButton = document.body.querySelector('.scroll-button-right');
+rightButton.addEventListener('click', () => {
+  scrollToIndex(currentIndex + 1);
 });
 
 
