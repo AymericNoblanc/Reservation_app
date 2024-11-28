@@ -204,7 +204,7 @@ def signupPOST():
             %s (id, firstname, lastname, initial)
         VALUES
             ('%s', '%s', '%s', '%s')
-    ''' % (domaineUser, user_id, firstname, lastname, initial)
+    ''' % (domaineUser, user_id, firstname.replace("'", "''"), lastname.replace("'", "''"), initial)
     cur.execute(query)
     conn.commit()
 

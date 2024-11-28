@@ -279,7 +279,7 @@ selectUserCircle.addEventListener("click", () => {
     profileRectangle.style.width = '320px';
 
     profileRectangle.style.top = '30px';
-    profileRectangle.style.left = '35px';
+    profileRectangle.style.left = `${document.querySelector(".big_rectangle").getBoundingClientRect().left%document.body.scrollWidth}px`;
 
   }, 1)
 
@@ -852,8 +852,19 @@ function lookupClick(event) {
     lookupRectangle.style.height = '400px';
     lookupRectangle.style.width = '320px';
 
-    lookupRectangle.style.top = '165px';
-    lookupRectangle.style.left = '35px';
+    if (this.querySelector(".dayOfTheWeek").textContent === 'Lundi') {
+      lookupRectangle.style.top = `${this.getBoundingClientRect().top + 15}px`; // Adjust left position
+    } else if (this.querySelector(".dayOfTheWeek").textContent === 'Mardi') {
+      lookupRectangle.style.top = `${this.getBoundingClientRect().top - 135}px`; // Adjust left position
+    } else if (this.querySelector(".dayOfTheWeek").textContent === 'Mercredi') {
+      lookupRectangle.style.left = `${this.getBoundingClientRect().left - 170}px`; // Adjust left position
+      lookupRectangle.style.top = `${this.getBoundingClientRect().top - 135}px`; // Adjust left position
+    } else if (this.querySelector(".dayOfTheWeek").textContent === 'Jeudi') {
+      lookupRectangle.style.top = `${this.getBoundingClientRect().top - 285}px`; // Adjust left position
+    } else if (this.querySelector(".dayOfTheWeek").textContent === 'Vendredi') {
+      lookupRectangle.style.left = `${this.getBoundingClientRect().left - 170}px`; // Adjust left position
+      lookupRectangle.style.top = `${this.getBoundingClientRect().top - 285}px`; // Adjust left position
+    }
 
     reservationListDiv.style.marginTop = "28%";
 
