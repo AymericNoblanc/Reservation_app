@@ -12,16 +12,17 @@
 </head>
 <body>
 <div class="signup-container">
+    <p id="error-message" style="color: red; font-size: 14px;"></p>
     <div class="signup-card">
         <h1 class="signup-title">Créer un compte</h1>
         <form id="signup-form">
             <div class="input-group">
                 <label for="firstname">Prénom</label>
-                <input type="text" id="firstname" name="firstname" placeholder="Entrez votre prénom" required>
+                <input type="text" id="firstname" name="firstname" placeholder="Entrez votre prénom" pattern="[A-Za-zÀ-ÖØ-öø-ÿ' \-]+" required>
             </div>
             <div class="input-group">
                 <label for="lastname">Nom</label>
-                <input type="text" id="lastname" name="lastname" placeholder="Entrez votre nom" required>
+                <input type="text" id="lastname" name="lastname" placeholder="Entrez votre nom" pattern="[A-Za-zÀ-ÖØ-öø-ÿ' \-]+" required>
             </div>
             <div class="input-group">
                 <label for="email">Adresse Email</label>

@@ -20,10 +20,10 @@ document.getElementById('signup-form').addEventListener('submit', async (event) 
         if (response.ok) {
             window.location.href = "/" + result.domaine; // Redirige vers la page d'accueil (ou autre)
         } else {
-            alert(result); // Affiche l'erreur
+            document.getElementById('error-message').innerText = result;
         }
     } catch (error) {
-        console.error('Erreur lors de l inscription:', error);
+        document.getElementById('error-message').innerText = error;
     }
 });
 
@@ -39,6 +39,7 @@ window.addEventListener('keydown',function(e) {
 document.addEventListener('DOMContentLoaded', function() {
     const domaineInput = document.getElementById('domaine');
     if (domaineInput.value.trim() !== '') {
-        domaineInput.disabled = true;
+        domaineInput.parentElement.remove();
+        document.querySelector('.signup-button').style.marginTop = '10px';
     }
 });

@@ -279,7 +279,7 @@ selectUserCircle.addEventListener("click", () => {
     profileRectangle.style.width = '320px';
 
     profileRectangle.style.top = '30px';
-    profileRectangle.style.left = '35px';
+    profileRectangle.style.left = `${document.querySelector(".big_rectangle").getBoundingClientRect().left%document.body.scrollWidth}px`;
 
   }, 1)
 
@@ -581,6 +581,7 @@ function handleInfiniteScroll () {
   const scrollLeft = weekContainer.scrollLeft; // Position actuelle du scroll
   const itemWidth = weekContainer.clientWidth; // Largeur d'un élément (suppose largeur fixe)
   currentIndex = Math.round(scrollLeft / itemWidth); // Trouver l'élément le plus proche
+  activeScrollIndicator()
 }
 weekContainer.addEventListener("scroll", handleInfiniteScroll);
 
@@ -608,16 +609,30 @@ function scrollToIndex(index) {
   currentIndex = index; // Mettre à jour l'index actuel
 }
 
-const leftButton = document.querySelector(".scroll-button-left");
-leftButton.addEventListener('click', () => {
+const leftScroll = document.querySelector(".indicator.left");
+leftScroll.addEventListener('click', () => {
   scrollToIndex(currentIndex - 1);
+  activeScrollIndicator()
 });
 
-const rightButton = document.querySelector(".scroll-button-right");
-rightButton.addEventListener('click', () => {
+const rightScroll = document.querySelector(".indicator.right");
+rightScroll.addEventListener('click', () => {
   scrollToIndex(currentIndex + 1);
+  activeScrollIndicator()
 });
 
+function activeScrollIndicator() {
+  document.querySelectorAll('.indicator').forEach(element => {
+    element.classList.remove('active');
+  });
+  if (currentIndex === 0) {
+    leftScroll.classList.add('active');
+  }else if (currentIndex === weekLimit - 1) {
+    rightScroll.classList.add('active');
+  }else{
+    document.querySelector('.indicator:not([class*=" "])').classList.add('active');
+  }
+}
 
 // Création d'éléments
 
@@ -667,9 +682,14 @@ function createRectangle(classes, dayOfWeek) {
 
   const checkCircle = document.createElement('div');
   checkCircle.classList.add('self-circle');
-  checkCircle.addEventListener('click', checkCircleClick);
-
   rectangle.appendChild(checkCircle);
+  if (dayRectangle < new Date().setHours(0, 0, 0, 0)){
+    const checkCircleOld = document.createElement('div');
+    checkCircleOld.classList.add('self-circle-old');
+    rectangle.appendChild(checkCircleOld);
+  }else{
+    checkCircle.addEventListener('click', checkCircleClick);
+  }
 
   rectangle.id = formattedDate;
 
@@ -832,8 +852,19 @@ function lookupClick(event) {
     lookupRectangle.style.height = '400px';
     lookupRectangle.style.width = '320px';
 
-    lookupRectangle.style.top = '165px';
-    lookupRectangle.style.left = '35px';
+    if (this.querySelector(".dayOfTheWeek").textContent === 'Lundi') {
+      lookupRectangle.style.top = `${this.getBoundingClientRect().top + 15}px`; // Adjust left position
+    } else if (this.querySelector(".dayOfTheWeek").textContent === 'Mardi') {
+      lookupRectangle.style.top = `${this.getBoundingClientRect().top - 135}px`; // Adjust left position
+    } else if (this.querySelector(".dayOfTheWeek").textContent === 'Mercredi') {
+      lookupRectangle.style.left = `${this.getBoundingClientRect().left - 170}px`; // Adjust left position
+      lookupRectangle.style.top = `${this.getBoundingClientRect().top - 135}px`; // Adjust left position
+    } else if (this.querySelector(".dayOfTheWeek").textContent === 'Jeudi') {
+      lookupRectangle.style.top = `${this.getBoundingClientRect().top - 285}px`; // Adjust left position
+    } else if (this.querySelector(".dayOfTheWeek").textContent === 'Vendredi') {
+      lookupRectangle.style.left = `${this.getBoundingClientRect().left - 170}px`; // Adjust left position
+      lookupRectangle.style.top = `${this.getBoundingClientRect().top - 285}px`; // Adjust left position
+    }
 
     reservationListDiv.style.marginTop = "28%";
 
@@ -884,6 +915,9 @@ function checkCircleClick(event) {
       const circle = createReservationCircle(User, parentDiv);
       parentDiv.appendChild(circle);
     }
+    if (parentDiv.style.backgroundColor === 'rgb(255, 161, 120)'){
+      parentDiv.style.backgroundColor = '#FFC288';
+    }
   }else{
     // Delete reservation
     deleteReservation(site.id, this.parentElement.id);
@@ -901,6 +935,9 @@ function checkCircleClick(event) {
         const circle = createReservationCircle(usersData.find(user => user.id === reservation.user_id), parentDiv);
         parentDiv.appendChild(circle);
       });
+    }
+    if (listOfCircles.length === 2){
+      parentDiv.style.backgroundColor = '#FFA178';
     }
   }
 }
@@ -1011,9 +1048,12 @@ async function fetchReservations(allRectanglesInCreation) {
 
       createNumResa(rectangle, resaRectangle);
 
-      if (resaRectangle.length === 0 || ((resaRectangle.length === 1) && (resaRectangle[0].user_id === User.id))){
+      if (resaRectangle.length === 0){
         rectangle.style.backgroundColor = '#FFA178';
+      }else if ((resaRectangle.length === 1) && (resaRectangle[0].user_id === User.id)){
+        rectangle.style.backgroundColor = '#FFC288';
       }
+
 
       let maxResa = 4;
       if (rectangle.classList.contains('big_rectangle')){
