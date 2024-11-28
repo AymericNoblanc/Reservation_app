@@ -117,7 +117,6 @@ nav .animation {
 }
 
 .lookup_rectangle {
-  position: absolute;
   margin: 0 auto !important;
   background-color: #FFE371;
   color: white;
@@ -138,7 +137,15 @@ nav .animation {
   box-sizing: border-box;
   transition: margin-top 0.3s ease;
   background-color: rgba(255, 227, 113, 0);
+}
 
+.lookup_list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.lookup_list::-webkit-scrollbar-thumb {
+  border-radius: 5px;
+  background-color: #c0c0c0;
 }
 
 .lookup_list_name {
@@ -174,16 +181,20 @@ nav .animation {
   color: rgb(0, 0, 0);
   font-size: 20px;
   font-weight: bold;
-  margin-left: 2vh;
-  margin-top: 2vh;
+  margin-left: 15px;
+  margin-top: 15px;
+  /*margin-left: 2vh;
+  margin-top: 2vh;*/
 }
 @keyframes growDayOfTheWeek {
   0% {
-    margin-left: 2vh;
+    /*margin-left: 2vh;*/
+    margin-left: 15px;
     font-size: 20px;
   }
   100% {
-    margin-left: 3vh;
+    /*margin-left: 3vh;*/
+    margin-left: 20px;
     font-size: 32px;
   }
 }
@@ -193,18 +204,24 @@ nav .animation {
   font-family: Arial, sans-serif;
   color: #7f7f7f;
   font-size: 14px;
-  margin-left: 3vh;
-  margin-top: 5vh;
+  margin-left: 25px;
+  margin-top: 38px;
+  /*margin-left: 3vh;
+  margin-top: 5vh;*/
 }
 @keyframes growDayNum {
   0% {
-    margin-left: 3vh;
-    margin-top: 5vh;
+    margin-left: 25px;
+    margin-top: 38px;
+    /*margin-left: 3vh;
+    margin-top: 5vh;*/
     font-size: 14px;
   }
   100% {
-    margin-left: 5vh;
-    margin-top: 6.5vh;
+    margin-left: 35px;
+    margin-top: 52px;
+    /*margin-left: 5vh;
+    margin-top: 6.5vh;*/
     font-size: 20px;
   }
 }

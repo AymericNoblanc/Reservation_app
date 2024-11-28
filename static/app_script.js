@@ -225,6 +225,8 @@ async function logoutUser() {
 
 function closeProfileClick() {
 
+  profileRectangle.style.left = `${selectUserCircle.getBoundingClientRect().left -285}px`;
+
   const overlay = document.getElementById('overlayProfile');
   overlay.remove();
   const container = document.querySelector('.profile_rectangle');
@@ -236,11 +238,13 @@ function closeProfileClick() {
 
   profileRectangle.style.boxShadow = '0 0 0 0';
 
-  profileRectangle.style.left = `${selectUserCircle.getBoundingClientRect().left + 20}px`;
-  profileRectangle.style.top = `${selectUserCircle.getBoundingClientRect().top + 20}px`;
-  profileRectangle.style.width = "0px";
-  profileRectangle.style.height = "0px";
 
+  setTimeout(() => {
+    profileRectangle.style.left = `${selectUserCircle.getBoundingClientRect().left + 20}px`;
+    profileRectangle.style.top = `${selectUserCircle.getBoundingClientRect().top + 20}px`;
+    profileRectangle.style.width = "0px";
+    profileRectangle.style.height = "0px";
+  }, 1)
 
   setTimeout(() => {
     profileRectangle.remove();
@@ -279,13 +283,14 @@ selectUserCircle.addEventListener("click", () => {
     profileRectangle.style.width = '320px';
 
     profileRectangle.style.top = '30px';
-    profileRectangle.style.left = `${document.querySelector(".big_rectangle").getBoundingClientRect().left%document.body.scrollWidth}px`;
+    profileRectangle.style.left = `${selectUserCircle.getBoundingClientRect().left -285}px`;
 
   }, 1)
 
   setTimeout(() => {
     createProfile();
-  }, 200)
+    profileRectangle.style.left = 'auto';
+  }, 250)
 
 });
 
@@ -719,6 +724,14 @@ function createNumResa(rectangle, resaRectangle) {
 let lookupRectangle;
 function lookupRectangleClick() {
 
+  const dayRectangle = lookupRectangle.querySelector(".dayOfTheWeek").textContent;
+
+  if (dayRectangle === 'Mercredi') {
+    lookupRectangle.style.left = `${lookupRectangle.getBoundingClientRect().left}px`; // Adjust left position
+  } else if (dayRectangle === 'Vendredi') {
+    lookupRectangle.style.left = `${lookupRectangle.getBoundingClientRect().left}px`; // Adjust left position
+  }
+
   const overlay = document.getElementById('overlayLookup');
   overlay.remove();
 
@@ -869,11 +882,11 @@ function lookupClick(event) {
     reservationListDiv.style.marginTop = "28%";
 
     jour.style.fontSize = '32px';
-    jour.style.marginLeft = '3vh';
+    jour.style.marginLeft = '20px';
 
     jourNum.style.fontSize = '20px';
-    jourNum.style.marginTop = '6.5vh';
-    jourNum.style.marginLeft = '5vh';
+    jourNum.style.marginTop = '52px';
+    jourNum.style.marginLeft = '35px';
 
     const elements = reservationListDiv.querySelectorAll(".lookup_list_element");
     elements.forEach(element => {
@@ -890,6 +903,9 @@ function lookupClick(event) {
 
   }, 1)
 
+  setTimeout(() => {
+    lookupRectangle.style.left = 'auto';
+  }, 300)
 }
 
 function checkCircleClick(event) {
