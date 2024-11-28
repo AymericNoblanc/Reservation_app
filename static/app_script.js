@@ -869,11 +869,11 @@ function lookupClick(event) {
     reservationListDiv.style.marginTop = "28%";
 
     jour.style.fontSize = '32px';
-    jour.style.marginLeft = '3vh';
+    jour.style.marginLeft = '20px';
 
     jourNum.style.fontSize = '20px';
-    jourNum.style.marginTop = '6.5vh';
-    jourNum.style.marginLeft = '5vh';
+    jourNum.style.marginTop = '52px';
+    jourNum.style.marginLeft = '35px';
 
     const elements = reservationListDiv.querySelectorAll(".lookup_list_element");
     elements.forEach(element => {
