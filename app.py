@@ -484,12 +484,14 @@ def create_reservation(domaine):
     conn.commit()
 
     queryLog = '''
-        INSERT INTO
-            log (credential_id, request_type, request_data)
-        VALUES
-            ((SELECT id FROM credential WHERE user_id = '%s'), 'Création réservation', '%s')
-    ''' % (user_id, query)
-    cur.execute(queryLog)
+        INSERT INTO log (credential_id, request_type, request_data)
+        VALUES (
+            (SELECT id FROM credential WHERE user_id = %s),
+            'Création réservation',
+            %s
+        )
+    '''
+    cur.execute(queryLog, (user_id, query))
     conn.commit()
 
     cur.close()
@@ -581,12 +583,14 @@ def cancel_reservation(domaine):
     conn.commit()
 
     queryLog = '''
-        INSERT INTO
-            log (credential_id, request_type, request_data)
-        VALUES
-            ((SELECT id FROM credential WHERE user_id = '%s'), 'Suppression réservation', '%s')
-    ''' % (user_id, query)
-    cur.execute(queryLog)
+        INSERT INTO log (credential_id, request_type, request_data)
+        VALUES (
+            (SELECT id FROM credential WHERE user_id = %s),
+            'Suppression réservation',
+            %s
+        )
+    '''
+    cur.execute(queryLog, (user_id, query))
     conn.commit()
 
     cur.close()
