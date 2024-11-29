@@ -302,7 +302,7 @@ def get_user_from_cookie(cookie):
 
     query = '''
         SELECT 
-            cr.user_id
+            cr.user_id, cr.id
         FROM 
             cookie c
         JOIN 
@@ -317,6 +317,15 @@ def get_user_from_cookie(cookie):
     user.append({
         "user_id": row[0]
     })
+
+    query = '''
+        INSERT INTO
+            log (credential_id, request_type, request_data)
+        VALUES
+            ('%s', 'connexion', '%s')
+    ''' % (row[1], cookie)
+    cur.execute(query)
+    conn.commit()
 
     cur.close()
     conn.close()
@@ -474,6 +483,15 @@ def create_reservation(domaine):
     cur.execute(query)
     conn.commit()
 
+    queryLog = '''
+        INSERT INTO
+            log (credential_id, request_type, request_data)
+        VALUES
+            ((SELECT id FROM credential WHERE user_id = '%s'), 'Création réservation', '%s')
+    ''' % (user_id, query)
+    cur.execute(queryLog)
+    conn.commit()
+
     cur.close()
     conn.close()
 
@@ -560,6 +578,15 @@ def cancel_reservation(domaine):
             AND site_id = '%s'
     ''' % (domaineReservation, user_id, date, site_id)
     cur.execute(query)
+    conn.commit()
+
+    queryLog = '''
+        INSERT INTO
+            log (credential_id, request_type, request_data)
+        VALUES
+            ((SELECT id FROM credential WHERE user_id = '%s'), 'Suppression réservation', '%s')
+    ''' % (user_id, query)
+    cur.execute(queryLog)
     conn.commit()
 
     cur.close()
