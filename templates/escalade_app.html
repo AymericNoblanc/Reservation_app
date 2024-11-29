@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1, minimum-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Ouisti - Escalade</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='app_styles.css') }}">
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon/favicon-32x32.png') }}">
+  <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon/favicon-16x16.png') }}">
+  <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='favicon/apple-touch-icon.png') }}">
+</head>
+<body>
+    <nav id="navContainer">
+      <div class="animation start-home"></div>
+      <div class="selectUser" id="selectUser"></div>
+    </nav>
+
+    <div class="container x mandatory-scroll-snapping" id="weekSelector"></div>
+
+    <div class="scroll-indicator">
+        <span class="indicator left active"></span>
+        <span class="indicator"></span>
+        <span class="indicator right"></span>
+    </div>
+
+    <script src="{{ url_for('static', filename='app_script.js') }}"></script>
+</body>
+</html>

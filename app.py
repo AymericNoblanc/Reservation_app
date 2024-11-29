@@ -286,6 +286,14 @@ def home_teamsquare():
 
     return redirect('/login/')
 
+@app.route('/escalade/')
+def home_escalade():
+
+    if check_auth_token(request.cookies.get('authToken')) is not False:
+        return render_template('escalade_app.html')
+
+    return redirect('/login/')
+
 #Route pour récupérer les informations de l'utilisateur connecté
 @app.route('/find-cookie/<cookie>', methods=['GET'])
 def get_user_from_cookie(cookie):
@@ -561,7 +569,6 @@ def cancel_reservation(domaine):
     response.headers.add('Access-Control-Allow-Origin', '*')
 
     return response
-
 
 #Lister toutes les réservations pour un site pour une semaine donnée
 @app.route('/<domaine>/reservations/site/<site_id>/week', methods=['GET'])
