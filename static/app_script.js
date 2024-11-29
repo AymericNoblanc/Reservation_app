@@ -932,7 +932,7 @@ function checkCircleClick(event) {
       parentDiv.appendChild(circle);
     }
     if (parentDiv.style.backgroundColor === 'rgb(255, 161, 120)'){
-      parentDiv.style.backgroundColor = '#FFC288';
+      parentDiv.style.backgroundColor = '#FFE371';
     }
   }else{
     // Delete reservation
@@ -1066,8 +1066,6 @@ async function fetchReservations(allRectanglesInCreation) {
 
       if (resaRectangle.length === 0){
         rectangle.style.backgroundColor = '#FFA178';
-      }else if ((resaRectangle.length === 1) && (resaRectangle[0].user_id === User.id)){
-        rectangle.style.backgroundColor = '#FFC288';
       }
 
 
