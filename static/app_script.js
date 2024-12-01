@@ -283,7 +283,11 @@ selectUserCircle.addEventListener("click", () => {
     profileRectangle.style.width = '320px';
 
     profileRectangle.style.top = '30px';
-    profileRectangle.style.left = `${selectUserCircle.getBoundingClientRect().left -285}px`;
+
+    const windowWidth = window.innerWidth;
+    const bigRectangleWidth = document.querySelector('.big_rectangle').offsetWidth;
+
+    profileRectangle.style.left = `${(windowWidth / 2) - (bigRectangleWidth / 2)}px`;
 
   }, 1)
 
