@@ -108,6 +108,15 @@ def loginPOST():
     cur.execute(query)
     conn.commit()
 
+    query = '''
+        INSERT INTO
+            log (credential_id, request_type, request_data)
+        VALUES
+            ('%s', 'connexion_login', '%s')
+    ''' % (rows[0][3], token)
+    cur.execute(query)
+    conn.commit()
+
     cur.close()
     conn.close()
 
@@ -219,6 +228,15 @@ def signupPOST():
             VALUES
                 ('%s', '%s', '%s')
         ''' % (credential_id, token, expires_at)
+    cur.execute(query)
+    conn.commit()
+
+    query = '''
+        INSERT INTO
+            log (credential_id, request_type, request_data)
+        VALUES
+            ('%s', 'signup', '%s')
+    ''' % (credential_id, token)
     cur.execute(query)
     conn.commit()
 
@@ -345,10 +363,32 @@ def cookie_logout():
         cur = conn.cursor()
 
         query = '''
+            SELECT 
+                cr.id
+            FROM 
+                cookie c
+            JOIN 
+                credential cr on c.credential_id = cr.id
+            WHERE
+                c.token = '%s'
+        ''' % (token)
+        cur.execute(query)
+        row = cur.fetchone()
+
+        query = '''
             DELETE
             FROM cookie
             WHERE token = '%s'
         ''' % (token)
+        cur.execute(query)
+        conn.commit()
+
+        query = '''
+            INSERT INTO
+                log (credential_id, request_type, request_data)
+            VALUES
+                ('%s', 'deconnexion', '%s')
+        ''' % (row[0], token)
         cur.execute(query)
         conn.commit()
 
@@ -374,6 +414,188 @@ def show_logs():
         JOIN credential c ON l.credential_id = c.id
         JOIN domaine d ON c.domaine_id = d.id
         WHERE request_time > current_date - interval '2' day
+        ORDER BY request_time DESC;
+        """
+    cur.execute(query)
+    logs = cur.fetchall()
+
+    cur.close()
+    conn.close()
+
+    html_template = """
+            <!DOCTYPE html>
+            <html lang="fr">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Logs des Requêtes</title>
+                <style>
+                    body {
+                        font-family: Arial, sans-serif;
+                        margin: 20px;
+                        padding: 0;
+                        background-color: #f4f4f9;
+                    }
+                    table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        margin-top: 20px;
+                        background-color: #fff;
+                    }
+                    table th, table td {
+                        border: 1px solid #ccc;
+                        padding: 8px;
+                        text-align: left;
+                    }
+                    table th {
+                        background-color: #2c3e50;
+                        color: white;
+                    }
+                    table tr:nth-child(even) {
+                        background-color: #f9f9f9;
+                    }
+                    h1 {
+                        text-align: center;
+                        color: #2c3e50;
+                    }
+                </style>
+            </head>
+            <body>
+                <h1>Logs des Requêtes</h1>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Email</th>
+                            <th>Domaine</th>
+                            <th>Date et Heure</th>
+                            <th>Type de Requête</th>
+                            <th>Données</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in logs %}
+                        <tr>
+                            <td>{{ log[0] }}</td>
+                            <td>{{ log[1] }}</td>
+                            <td>{{ log[2] }}</td>
+                            <td>{{ log[3] }}</td>
+                            <td>{{ log[4] }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </body>
+            </html>
+    """
+
+    return render_template_string(html_template, logs=logs)
+
+@app.route('/a8b7c59e/logs/connexion/')
+def show_connexion_logs():
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    # Exécution de la requête
+    query = """
+        SELECT email, d.name, 
+               request_time AT TIME ZONE 'Europe/Paris' AS request_time, 
+               request_type, request_data
+        FROM log l
+        JOIN credential c ON l.credential_id = c.id
+        JOIN domaine d ON c.domaine_id = d.id
+        WHERE request_time > current_date - interval '2' day
+        AND request_type = 'connexion' OR request_type = 'connexion_login'
+        ORDER BY request_time DESC;
+        """
+    cur.execute(query)
+    logs = cur.fetchall()
+
+    cur.close()
+    conn.close()
+
+    html_template = """
+            <!DOCTYPE html>
+            <html lang="fr">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Logs des Requêtes</title>
+                <style>
+                    body {
+                        font-family: Arial, sans-serif;
+                        margin: 20px;
+                        padding: 0;
+                        background-color: #f4f4f9;
+                    }
+                    table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        margin-top: 20px;
+                        background-color: #fff;
+                    }
+                    table th, table td {
+                        border: 1px solid #ccc;
+                        padding: 8px;
+                        text-align: left;
+                    }
+                    table th {
+                        background-color: #2c3e50;
+                        color: white;
+                    }
+                    table tr:nth-child(even) {
+                        background-color: #f9f9f9;
+                    }
+                    h1 {
+                        text-align: center;
+                        color: #2c3e50;
+                    }
+                </style>
+            </head>
+            <body>
+                <h1>Logs des Requêtes</h1>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Email</th>
+                            <th>Domaine</th>
+                            <th>Date et Heure</th>
+                            <th>Type de Requête</th>
+                            <th>Données</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in logs %}
+                        <tr>
+                            <td>{{ log[0] }}</td>
+                            <td>{{ log[1] }}</td>
+                            <td>{{ log[2] }}</td>
+                            <td>{{ log[3] }}</td>
+                            <td>{{ log[4] }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </body>
+            </html>
+    """
+
+    return render_template_string(html_template, logs=logs)
+
+@app.route('/a8b7c59e/logs/signup/')
+def show_signup_logs():
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    # Exécution de la requête
+    query = """
+        SELECT email, d.name, 
+               request_time AT TIME ZONE 'Europe/Paris' AS request_time, 
+               request_type, request_data
+        FROM log l
+        JOIN credential c ON l.credential_id = c.id
+        JOIN domaine d ON c.domaine_id = d.id
+        WHERE request_time > current_date - interval '2' day
+        AND request_type = 'signup'
         ORDER BY request_time DESC;
         """
     cur.execute(query)
@@ -959,4 +1181,4 @@ def get_reservations_for_site_in_a_week(domaine, site_id):
 # Lancer l'application Flask
 if __name__ == '__main__':
 
-    app.run(host="192.168.1.8", debug=True)
+    app.run(debug=True)
