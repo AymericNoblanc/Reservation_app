@@ -269,12 +269,13 @@ selectUserCircle.addEventListener("click", () => {
   overlay.style.pointerEvents = 'all';
   overlay.style.backgroundColor = 'transparent';
   overlay.style.display = 'block';
-  overlay.style.position = 'absolute';
+  overlay.style.position = 'fixed';
   overlay.style.top = '0';
   overlay.style.left = '0';
+  overlay.style.zIndex = '10';
 
   overlay.addEventListener('click', null);
-  document.body.appendChild(overlay);
+  document.body.insertBefore(overlay, document.body.firstChild);
 
   document.body.appendChild(profileRectangle);
 
@@ -530,14 +531,18 @@ function sitesSelection() {
     siteDiv.textContent = site.display_name;
     if (index === 0){
       siteDiv.classList.add('active');
-      animation.style.left = siteDiv.id + 'px';
+      animation.style.marginLeft = '3px';
     }
     navContainer.insertBefore(siteDiv, navContainer.firstChild);
   });
-  
+  console.log(animation.style.marginLeft);
+
+
   // Gérer les clics sur les autres éléments
   document.querySelectorAll('.sites').forEach(site => {
     site.addEventListener('click', function() {
+      if (this.classList.contains('active')) return;
+
       // Supprimer la classe active de tous les autres éléments
       document.querySelectorAll('.sites').forEach(s => s.classList.remove('active'));
 
@@ -545,8 +550,8 @@ function sitesSelection() {
       this.classList.add('active');
 
       // Déplacer l'animation
-      const targetLeft = this.id * 100; // Valeur "left" à partir de l'attribut data target
-      animation.style.left = targetLeft + 'px';
+      const marginLeft = this.id * 100 + 3; // Valeur "left" à partir de l'attribut data target
+      animation.style.marginLeft = marginLeft + 'px';
       animation.style.width = 100 - 6 + 'px'; // Largeur de l'élément sélectionné (enlever les marges)
 
       document.querySelectorAll('.main').forEach(e => e.remove());
@@ -819,12 +824,13 @@ function lookupClick(event) {
   overlay.style.pointerEvents = 'all';
   overlay.style.backgroundColor = 'transparent';
   overlay.style.display = 'block';
-  overlay.style.position = 'absolute';
+  overlay.style.position = 'fixed';
   overlay.style.top = '0';
   overlay.style.left = '0';
+  overlay.style.zIndex = '10';
 
   overlay.addEventListener('click', lookupRectangleClick);
-  document.body.appendChild(overlay);
+  document.body.insertBefore(overlay, document.body.firstChild);
 
   lookupRectangle.addEventListener('click', lookupRectangleClick);
   document.body.appendChild(lookupRectangle);

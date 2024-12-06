@@ -1181,4 +1181,4 @@ def get_reservations_for_site_in_a_week(domaine, site_id):
 # Lancer l'application Flask
 if __name__ == '__main__':
 
-    app.run(debug=True)
+    app.run(host="192.168.1.8", debug=True)
