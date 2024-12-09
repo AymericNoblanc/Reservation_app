@@ -11,7 +11,8 @@ let weekReservationData = [{date: ""}];
 
 const weekLimit = 12
 let currentCreateWeek = 0;
-let currentCreateHistory = 1;
+let currentCreateHistoryTemplate = 1;
+let currentCreateHistoryFetch = 2;
 let actualMondayDate = new Date();
 
 // API call :
@@ -583,18 +584,23 @@ document.addEventListener('gesturestart', function (e) {
 
 const weekContainer = document.getElementById("weekSelector");
 function handleInfiniteScroll () {
-  const endOfScrollRight =
-  weekContainer.scrollLeft + 2 * weekContainer.clientWidth >= weekContainer.scrollWidth - 5; // Détecte la fin du scroll
+  const endOfScrollRight = weekContainer.scrollLeft + 2 * weekContainer.clientWidth >= weekContainer.scrollWidth - 5; // Détecte la fin du scroll
   if (endOfScrollRight && currentCreateWeek < weekLimit) {
     createWeek();
   }
-  const endOfScrollLeft =
-      weekContainer.scrollLeft - weekContainer.clientWidth <= 0; // Détecte la fin du scroll
-  if (endOfScrollLeft && currentCreateHistory < weekLimit + 1){
-    createWeek(true);
-    weekContainer.scrollTo({
-      left: 2 * weekContainer.clientWidth,
-    });
+  const endOfScrollLeft = weekContainer.scrollLeft - weekContainer.clientWidth <= weekContainer.clientWidth * (weekLimit - currentCreateHistoryFetch); // Détecte la fin du scroll
+  if (endOfScrollLeft && currentCreateHistoryFetch < weekLimit){
+
+    currentCreateHistoryFetch += 1;
+
+    const targetDate = new Date(actualMondayDate);
+    targetDate.setDate(targetDate.getDate() - (7 * currentCreateHistoryFetch));
+
+    const targetDateID = targetDate.getFullYear() + '-' +
+        String(targetDate.getMonth() + 1).padStart(2, '0') + '-' +
+        String(targetDate.getDate()).padStart(2, '0');
+
+    fetchReservations(weekContainer.querySelector(`.main[id='${targetDateID}']`));
   }
 
   const scrollLeft = weekContainer.scrollLeft; // Position actuelle du scroll
@@ -640,17 +646,23 @@ function activeScrollIndicator() {
   document.querySelectorAll('.indicator').forEach(element => {
     element.classList.remove('active');
   });
-  if (currentIndex === currentCreateHistory - 1) {
+  if (currentIndex === currentCreateHistoryTemplate - 1) {
     document.querySelector(".history").style.opacity = "0";
     leftScroll.classList.add('active');
-  } else if (currentIndex === weekLimit + currentCreateHistory - 2) {
+  } else if (currentIndex === weekLimit + currentCreateHistoryTemplate - 2) {
     rightScroll.classList.add('active');
-  } else if (currentIndex < currentCreateHistory - 1){
+  } else if (currentIndex < currentCreateHistoryTemplate - 1){
     document.querySelector(".history").style.opacity = "1";
   }else{
     document.querySelector('.indicator:not([class*=" "])').classList.add('active');
   }
 }
+
+const historyButton = document.querySelector(".history");
+historyButton.addEventListener('click', () => {
+  scrollToIndex(12);
+  activeScrollIndicator()
+});
 
 // Création d'éléments
 
@@ -753,8 +765,7 @@ function lookupRectangleClick() {
   const overlay = document.getElementById('overlayLookup');
   overlay.remove();
 
-  const formerRectangle = weekContainer.querySelector(`[id='${lookupRectangle.id}']`);
-
+  const formerRectangle = weekContainer.querySelector(`[id='${lookupRectangle.id}'].small_rectangle, [id='${lookupRectangle.id}'].big_rectangle`);
   lookupRectangle.style.boxShadow = '0 0 0 0';
 
   const jour = lookupRectangle.querySelector(".dayOfTheWeek");
@@ -986,9 +997,8 @@ function weekTemplate (createHistory = false) {
   let weekDate = new Date(actualMondayDate)
 
   if (createHistory){
-    console.log('createHistory');
-    weekDate.setDate(weekDate.getDate() - 7 * currentCreateHistory);
-    currentCreateHistory += 1;
+    weekDate.setDate(weekDate.getDate() - 7 * currentCreateHistoryTemplate);
+    currentCreateHistoryTemplate += 1;
   }else{
     weekDate.setDate(weekDate.getDate() + 7 * currentCreateWeek);
     currentCreateWeek += 1;
@@ -1143,9 +1153,13 @@ window.onload = async function () {
   createWeek(true);
   createWeek(true);
 
+  for (let i = 0; i < 10; i++) {
+    weekTemplate(true);
+  }
+
   // Faire défiler de manière fluide
   weekContainer.scrollTo({
-    left: 2 * weekContainer.clientWidth,
+    left: 12 * weekContainer.clientWidth,
   });
 
 };
