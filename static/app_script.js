@@ -557,15 +557,16 @@ function sitesSelection() {
       animation.style.width = 100 - 6 + 'px'; // Largeur de l'élément sélectionné (enlever les marges)
 
       document.querySelectorAll('.main').forEach(week => {
-        const allRectangle = week.querySelectorAll(".big_rectangle, .small_rectangle");
-        allRectangle.forEach(rectangle => {
-          rectangle.querySelector('.nbResa').remove();
-          rectangle.style.backgroundColor = '#EEEEEF';
-          rectangle.removeEventListener('click', lookupClick);
-          rectangle.querySelectorAll('.circle').forEach(e => e.remove());
-          rectangle.querySelector('.self-circle').classList.remove('self-circle-active');
-        });
-        fetchReservations(week);
+        if (weekReservationData.some(entry => entry.date === week.id)) {
+          const allRectangle = week.querySelectorAll(".big_rectangle, .small_rectangle");
+          allRectangle.forEach(rectangle => {
+            rectangle.querySelector('.nbResa').remove();
+            rectangle.removeEventListener('click', lookupClick);
+            rectangle.querySelectorAll('.circle').forEach(e => e.remove());
+            rectangle.querySelector('.self-circle').classList.remove('self-circle-active');
+          });
+          fetchReservations(week);
+        }
       });
 
       switchSiteSelected = sitesData[this.id];
