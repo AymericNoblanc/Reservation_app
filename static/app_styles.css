@@ -322,7 +322,7 @@ nav .animation {
 }
 
 /* Style des points */
-.scroll-indicator .indicator {
+.indicator {
   width: 10px; /* Taille du point */
   height: 10px; /* Taille du point */
   margin: 0 10px; /* Espacement entre les points */
@@ -334,6 +334,21 @@ nav .animation {
 /* Point actif */
 .scroll-indicator .indicator.active {
   background-color: #606060; /* Couleur du point actif */
+}
+
+/* Style du symbole history */
+.history {
+  position: absolute;
+  left : 60px;
+  width: 23px; /* Taille du point */
+  height: 23px; /* Taille du point */
+  background-color: grey; /* Couleur des points inactifs */
+  border-radius: 50%; /* Cercle parfait */
+  transition: opacity 0.2s ease; /* Animation pour le changement de couleur */
+  justify-content: center;
+  align-items: center;
+  display: flex;
+  opacity: 0;
 }
 
 

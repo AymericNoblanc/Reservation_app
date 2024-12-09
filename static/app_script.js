@@ -11,8 +11,8 @@ let weekReservationData = [{date: ""}];
 
 const weekLimit = 12
 let currentCreateWeek = 0;
-let currentCreateHistory = 0;
-let dayRectangle = new Date();
+let currentCreateHistory = 1;
+let actualMondayDate = new Date();
 
 // API call :
 
@@ -588,17 +588,14 @@ function handleInfiniteScroll () {
   if (endOfScrollRight && currentCreateWeek < weekLimit) {
     createWeek();
   }
-  /*const endOfScrollLeft =
-      weekContainer.scrollLeft - 2 * weekContainer.clientWidth <= 5;
-  if (endOfScrollLeft && currentCreateHistory < weekLimit) {
-    console.log("jbjhjbjhjbjhjbjhjbjhjbjhjbjhjbjhjbjhjbjh")
+  const endOfScrollLeft =
+      weekContainer.scrollLeft - weekContainer.clientWidth <= 0; // Détecte la fin du scroll
+  if (endOfScrollLeft && currentCreateHistory < weekLimit + 1){
     createWeek(true);
     weekContainer.scrollTo({
-      right: weekContainer.clientWidth,
+      left: 2 * weekContainer.clientWidth,
     });
   }
-
-  console.log(weekContainer.scrollLeft - 3 * weekContainer.clientWidth, weekContainer.scrollWidth);*/
 
   const scrollLeft = weekContainer.scrollLeft; // Position actuelle du scroll
   const itemWidth = weekContainer.clientWidth; // Largeur d'un élément (suppose largeur fixe)
@@ -643,10 +640,13 @@ function activeScrollIndicator() {
   document.querySelectorAll('.indicator').forEach(element => {
     element.classList.remove('active');
   });
-  if (currentIndex === 0) {
+  if (currentIndex === currentCreateHistory - 1) {
+    document.querySelector(".history").style.opacity = "0";
     leftScroll.classList.add('active');
-  }else if (currentIndex === weekLimit - 1) {
+  } else if (currentIndex === weekLimit + currentCreateHistory - 2) {
     rightScroll.classList.add('active');
+  } else if (currentIndex < currentCreateHistory - 1){
+    document.querySelector(".history").style.opacity = "1";
   }else{
     document.querySelector('.indicator:not([class*=" "])').classList.add('active');
   }
@@ -678,15 +678,22 @@ function createReservationCircle(user, rectangle) {
   return circle;
 }
 
-function createRectangle(classes, dayOfWeek) {
+function createRectangle(weekDate, dayOfWeek) {
 
-  const date = dayRectangle.toLocaleString('fr-Fr', { month: "numeric", day: "numeric" });
-  const formattedDate = dayRectangle.getFullYear() + '-' +
-      String(dayRectangle.getMonth() + 1).padStart(2, '0') + '-' +
-      String(dayRectangle.getDate()).padStart(2, '0');
+  let dayDate = new Date(weekDate)
 
   const rectangle = document.createElement("div");
-  classes.forEach(cls => rectangle.classList.add(cls));
+  if (dayOfWeek === 'Lundi'){rectangle.classList.add("big_rectangle");}else{
+    if (dayOfWeek === 'Mardi'){dayDate.setDate(dayDate.getDate() + 1);} else
+    if (dayOfWeek === 'Mercredi'){dayDate.setDate(dayDate.getDate() + 2);} else
+    if (dayOfWeek === 'Jeudi'){dayDate.setDate(dayDate.getDate() + 3);} else
+    if (dayOfWeek === 'Vendredi'){dayDate.setDate(dayDate.getDate() + 4);}
+    rectangle.classList.add("small_rectangle");
+  }
+
+  const dayDateID = dayDate.getFullYear() + '-' +
+      String(dayDate.getMonth() + 1).padStart(2, '0') + '-' +
+      String(dayDate.getDate()).padStart(2, '0');
 
   const dayElement = document.createElement("p");
   dayElement.classList.add("dayOfTheWeek");
@@ -695,13 +702,13 @@ function createRectangle(classes, dayOfWeek) {
 
   const dateElement = document.createElement("p");
   dateElement.classList.add("dayNum");
-  dateElement.textContent = date;
+  dateElement.textContent = `${dayDateID.split("-")[2]}/${dayDateID.split("-")[1]}`;
   rectangle.appendChild(dateElement);
 
   const checkCircle = document.createElement('div');
   checkCircle.classList.add('self-circle');
   rectangle.appendChild(checkCircle);
-  if (dayRectangle < new Date().setHours(0, 0, 0, 0)){
+  if (dayDate < new Date().setHours(0, 0, 0, 0)){
     const checkCircleOld = document.createElement('div');
     checkCircleOld.classList.add('self-circle-old');
     rectangle.appendChild(checkCircleOld);
@@ -709,9 +716,7 @@ function createRectangle(classes, dayOfWeek) {
     checkCircle.addEventListener('click', checkCircleClick);
   }
 
-  rectangle.id = formattedDate;
-
-  dayRectangle.setDate(dayRectangle.getDate()+1);
+  rectangle.id = dayDateID;
 
   return rectangle;
 }
@@ -737,11 +742,11 @@ function createNumResa(rectangle, resaRectangle) {
 let lookupRectangle;
 function lookupRectangleClick() {
 
-  const dayRectangle = lookupRectangle.querySelector(".dayOfTheWeek").textContent;
+  const dayLookupRectangle = lookupRectangle.querySelector(".dayOfTheWeek").textContent;
 
-  if (dayRectangle === 'Mercredi') {
+  if (dayLookupRectangle === 'Mercredi') {
     lookupRectangle.style.left = `${lookupRectangle.getBoundingClientRect().left}px`; // Adjust left position
-  } else if (dayRectangle === 'Vendredi') {
+  } else if (dayLookupRectangle === 'Vendredi') {
     lookupRectangle.style.left = `${lookupRectangle.getBoundingClientRect().left}px`; // Adjust left position
   }
 
@@ -977,39 +982,38 @@ function checkCircleClick(event) {
 // Création d'une semaine
 
 function weekTemplate (createHistory = false) {
+
+  let weekDate = new Date(actualMondayDate)
+
   if (createHistory){
     console.log('createHistory');
+    weekDate.setDate(weekDate.getDate() - 7 * currentCreateHistory);
     currentCreateHistory += 1;
   }else{
+    weekDate.setDate(weekDate.getDate() + 7 * currentCreateWeek);
     currentCreateWeek += 1;
   }
 
-  if (dayRectangle.getDay() === 0){
-    dayRectangle.setDate(dayRectangle.getDate() +1);
-  }else if (dayRectangle.getDay() === 6){
-    dayRectangle.setDate(dayRectangle.getDate() +2);
-  }
-
-  dayRectangle.setDate((dayRectangle.getDate() - (dayRectangle.getDay() + 6) % 7));
+  const weekDateID = weekDate.getFullYear() + '-' +
+      String(weekDate.getMonth() + 1).padStart(2, '0') + '-' +
+      String(weekDate.getDate()).padStart(2, '0');
 
   // Créer l'élément principal contenant la semaine et les rectangles
   const mainDiv = document.createElement("div");
   mainDiv.classList.add("main");
-  mainDiv.id = dayRectangle.getFullYear() + '-' +
-      String(dayRectangle.getMonth() + 1).padStart(2, '0') + '-' +
-      String(dayRectangle.getDate()).padStart(2, '0');
+  mainDiv.id = weekDateID
 
   // Créer l'élément p pour la semaine
   const weekElement = document.createElement("p");
   weekElement.classList.add("week");
-  weekElement.textContent = `Semaine du ${dayRectangle.toLocaleString('fr-Fr',{month: "numeric", day: "numeric"})}`;
+  weekElement.textContent = `Semaine du ${weekDateID.split("-")[2]}/${weekDateID.split("-")[1]}`;
 
   // Créer le conteneur principal des jours
   const daysDiv = document.createElement("div");
   daysDiv.classList.add("days");
 
   // Créer le grand rectangle
-  const bigRectangle = createRectangle(["big_rectangle"], "Lundi");
+  const bigRectangle = createRectangle(weekDate, "Lundi");
 
   // Créer le conteneur pour les petits rectangles
   const smallDaysDiv = document.createElement("div");
@@ -1020,8 +1024,8 @@ function weekTemplate (createHistory = false) {
   topSmallDaysDiv.classList.add("days", "small", "top");
 
   // Petits rectangles dans la ligne du haut
-  const smallRectangle1 = createRectangle(["small_rectangle"], "Mardi");
-  const smallRectangle2 = createRectangle(["small_rectangle"], "Mercredi");
+  const smallRectangle1 = createRectangle(weekDate, "Mardi");
+  const smallRectangle2 = createRectangle(weekDate, "Mercredi");
 
   // Ajouter les petits rectangles à la ligne du haut
   topSmallDaysDiv.appendChild(smallRectangle1);
@@ -1031,8 +1035,8 @@ function weekTemplate (createHistory = false) {
   const bottomSmallDaysDiv = document.createElement("div");
   bottomSmallDaysDiv.classList.add("days", "small", "bottom");
 
-  const smallRectangle3 = createRectangle(["small_rectangle"], "Jeudi");
-  const smallRectangle4 = createRectangle(["small_rectangle"], "Vendredi");
+  const smallRectangle3 = createRectangle(weekDate, "Jeudi");
+  const smallRectangle4 = createRectangle(weekDate, "Vendredi");
 
   // Ajouter les petits rectangles à la ligne du bas
   bottomSmallDaysDiv.appendChild(smallRectangle3);
@@ -1128,16 +1132,20 @@ window.onload = async function () {
 
   document.querySelectorAll('.main').forEach(e => e.remove());
   currentCreateWeek = 0;
-  dayRectangle = new Date();
-  /*dayRectangle.setDate(dayRectangle.getDate() - 7 * 3);*/
+
+  actualMondayDate.setDate(actualMondayDate.getDate() + 2); // Si c'est le week end charger la semaine suivante
+  actualMondayDate.setDate(actualMondayDate.getDate() - (actualMondayDate.getDay() + 6) % 7); // Trouver le lundi de la semaine
 
   createWeek();
   createWeek();
   createWeek();
+
+  createWeek(true);
+  createWeek(true);
 
   // Faire défiler de manière fluide
-  /*weekContainer.scrollTo({
-    left: 3 * weekContainer.clientWidth,
-  });*/
+  weekContainer.scrollTo({
+    left: 2 * weekContainer.clientWidth,
+  });
 
 };
