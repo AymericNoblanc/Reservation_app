@@ -914,8 +914,8 @@ def cancel_reservation(domaine):
     return response
 
 #Lister toutes les réservations pour un site pour une semaine donnée
-@app.route('/<domaine>/reservations/site/<site_id>/week', methods=['GET'])
-def get_reservations_for_site_in_a_week(domaine, site_id):
+@app.route('/<domaine>/reservations/week', methods=['GET'])
+def get_reservations_in_a_week(domaine):
     start_date = request.args.get('start_date')
     end_date = (datetime.strptime(start_date, '%Y-%m-%d') + timedelta(days=5)).strftime('%Y-%m-%d')
 
@@ -928,17 +928,17 @@ def get_reservations_for_site_in_a_week(domaine, site_id):
     query = '''
         SELECT 
             r.date, 
-            u.id AS user_id
+            u.id AS user_id,
+            r.site_id
         FROM 
             %s r
         JOIN 
             %s u ON r.user_id = u.id
         WHERE 
-            r.site_id = '%s'
-            AND r.date BETWEEN '%s' AND '%s'
+            r.date BETWEEN '%s' AND '%s'
         ORDER BY 
             r.date
-    ''' % (domaineReservation, domaineUser, site_id, start_date, end_date)
+    ''' % (domaineReservation, domaineUser, start_date, end_date)
     cur.execute(query)
     rows = cur.fetchall()
 
@@ -946,7 +946,8 @@ def get_reservations_for_site_in_a_week(domaine, site_id):
     for row in rows:
         reservations.append({
             "date": row[0].strftime('%Y-%m-%d'),
-            "user_id": row[1]
+            "user_id": row[1],
+            "site_id": row[2]
         })
 
     cur.close()
@@ -1181,4 +1182,4 @@ def get_reservations_for_site_in_a_week(domaine, site_id):
 # Lancer l'application Flask
 if __name__ == '__main__':
 
-    app.run(debug=True)
+    app.run(host="192.168.1.8", debug=True)
