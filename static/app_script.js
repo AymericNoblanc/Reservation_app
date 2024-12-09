@@ -75,6 +75,8 @@ async function getUsers() {
 
     selectUserCircle.style.backgroundColor = User.color;
     selectUserCircle.textContent = User.initial;
+    selectUserCircle.style.position = 'relative';
+    selectUserCircle.style.marginLeft = '11%';
 
     return usersData;
 

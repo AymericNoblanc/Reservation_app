@@ -40,13 +40,8 @@ body {
   flex-direction: column;
 }
 
-#navContainer{
-  display: flex;
-  justify-content: center;
-}
-
 nav {
-  width: 200px;
+  width: 100px;
   height: 50px;
   background-color: #EEEEEF;
   border-radius: 9px;
@@ -54,6 +49,7 @@ nav {
   display: flex;
   flex-wrap: wrap;
   flex-direction: column;
+  justify-content: center;
 }
 
 nav .sites {
@@ -89,8 +85,8 @@ nav .animation {
   align-items: center;
   color: white;
   background-color: #d8d8db;
-  margin-top: 2px;
-  margin-left: 11%;
+  margin-left: 29%;
+  position: absolute;
 }
 
 .sites:nth-child(1) {
