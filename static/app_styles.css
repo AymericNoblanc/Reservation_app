@@ -123,7 +123,7 @@ nav .animation {
   margin: 0 auto !important;
   width: 320px;
   height: 440px;
-  background-color: #FFE371;
+  background-color: #EEEEEF;
   color: white;
   font-size: 24px;
   font-weight: bold;
@@ -464,7 +464,7 @@ nav .animation {
   transition: width 0.3s ease, height 0.3s ease, left 0.3s ease, top 0.3s ease, bottom 0.3s ease;
   overflow-y: hidden;
   overflow-x: hidden;
-  z-index: 2;
+  z-index: 20;
 }
 
 .profile-header {

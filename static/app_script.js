@@ -7,10 +7,11 @@ let User = null;
 let sitesData = null;
 let usersData = null;
 let reservationData = null;
-let weekReservationData = [{date: "", site_id: ""}];
+let weekReservationData = [{date: ""}];
 
 const weekLimit = 12
-let currentWeek = 0;
+let currentCreateWeek = 0;
+let currentCreateHistory = 0;
 let dayRectangle = new Date();
 
 // API call :
@@ -81,9 +82,9 @@ async function getUsers() {
   }
 }
 
-async function getWeekReservation(siteId, date) {
+async function getWeekReservation(date) {
   try {
-    const response = await fetch(BASE_URL + "reservations/site/" + siteId + "/week?start_date=" + date);
+    const response = await fetch(BASE_URL + "reservations/week?start_date=" + date);
     const data = await response.json();
 
     reservationData = { ...reservationData };
@@ -95,10 +96,7 @@ async function getWeekReservation(siteId, date) {
 
     reservationData = Object.values({ ...reservationData});
 
-    const newAPIcall = {
-      date: date,
-      site_id: siteId
-    };
+    const newAPIcall = {date: date};
     weekReservationData.push(newAPIcall);
 
   } catch (error) {
@@ -108,7 +106,7 @@ async function getWeekReservation(siteId, date) {
 
 async function createReservation(siteId, date) {
   const url = BASE_URL + "reservations";
-  
+
   const body = JSON.stringify({
     user_id: User.id,
     site_id: siteId,
@@ -142,7 +140,7 @@ async function createReservation(siteId, date) {
 
 async function deleteReservation(siteId, date) {
   const url = BASE_URL + "reservations";
-  
+
   const body = JSON.stringify({
     user_id: User.id,
     site_id: siteId,
@@ -258,7 +256,6 @@ function closeProfileClick() {
 }
 
 let profileRectangle
-
 let selectUserCircle = document.getElementById("selectUser");
 selectUserCircle.addEventListener("click", () => {
 
@@ -283,7 +280,7 @@ selectUserCircle.addEventListener("click", () => {
   overlay.addEventListener('click', null);
   document.body.insertBefore(overlay, document.body.firstChild);
 
-  document.body.appendChild(profileRectangle);
+  document.body.insertBefore(profileRectangle, document.body.firstChild);
 
   setTimeout(() => {
     profileRectangle.style.height = '550px';
@@ -527,7 +524,7 @@ function sitesSelection() {
   navContainer.style.width = sitesData.length * 100 + 'px';
 
   const animation = document.querySelector('.animation');
-  animation.style.width = 100 - 6 + 'px'; 
+  animation.style.width = 100 - 6 + 'px';
 
   sitesData.slice().reverse().forEach(function (site, index) {
     index = sitesData.length - 1 - index;
@@ -558,18 +555,20 @@ function sitesSelection() {
       animation.style.marginLeft = marginLeft + 'px';
       animation.style.width = 100 - 6 + 'px'; // Largeur de l'élément sélectionné (enlever les marges)
 
-      document.querySelectorAll('.main').forEach(e => e.remove());
-
-      currentWeek = 0;
-      dayRectangle = new Date();
+      document.querySelectorAll('.main').forEach(week => {
+        const allRectangle = week.querySelectorAll(".big_rectangle, .small_rectangle");
+        allRectangle.forEach(rectangle => {
+          rectangle.querySelector('.nbResa').remove();
+          rectangle.style.backgroundColor = '#EEEEEF';
+          rectangle.removeEventListener('click', lookupClick);
+          rectangle.querySelectorAll('.circle').forEach(e => e.remove());
+          rectangle.querySelector('.self-circle').classList.remove('self-circle-active');
+        });
+        fetchReservations(week);
+      });
 
       switchSiteSelected = sitesData[this.id];
 
-      weekContainer.scrollLeft = 0;
-      createWeek();
-      createWeek();
-      createWeek();   
-    
     });
   });
 }
@@ -584,16 +583,22 @@ document.addEventListener('gesturestart', function (e) {
 
 const weekContainer = document.getElementById("weekSelector");
 function handleInfiniteScroll () {
-  const endOfScroll =
+  const endOfScrollRight =
   weekContainer.scrollLeft + 2 * weekContainer.clientWidth >= weekContainer.scrollWidth - 5; // Détecte la fin du scroll
-
-  if (endOfScroll && currentWeek < weekLimit) {
+  if (endOfScrollRight && currentCreateWeek < weekLimit) {
     createWeek();
   }
-
-  if (currentWeek === weekLimit) {
-    removeInfiniteScroll();
+  /*const endOfScrollLeft =
+      weekContainer.scrollLeft - 2 * weekContainer.clientWidth <= 5;
+  if (endOfScrollLeft && currentCreateHistory < weekLimit) {
+    console.log("jbjhjbjhjbjhjbjhjbjhjbjhjbjhjbjhjbjhjbjh")
+    createWeek(true);
+    weekContainer.scrollTo({
+      right: weekContainer.clientWidth,
+    });
   }
+
+  console.log(weekContainer.scrollLeft - 3 * weekContainer.clientWidth, weekContainer.scrollWidth);*/
 
   const scrollLeft = weekContainer.scrollLeft; // Position actuelle du scroll
   const itemWidth = weekContainer.clientWidth; // Largeur d'un élément (suppose largeur fixe)
@@ -601,10 +606,6 @@ function handleInfiniteScroll () {
   activeScrollIndicator()
 }
 weekContainer.addEventListener("scroll", handleInfiniteScroll);
-
-function removeInfiniteScroll () {
-  window.removeEventListener("scroll", handleInfiniteScroll);
-}
 
 let currentIndex = 0;
 function scrollToIndex(index) {
@@ -946,6 +947,7 @@ function checkCircleClick(event) {
     }
     if (parentDiv.style.backgroundColor === 'rgb(255, 161, 120)'){
       parentDiv.style.backgroundColor = '#FFE371';
+      parentDiv.addEventListener('click', lookupClick);
     }
   }else{
     // Delete reservation
@@ -967,14 +969,20 @@ function checkCircleClick(event) {
     }
     if (listOfCircles.length === 2){
       parentDiv.style.backgroundColor = '#FFA178';
+      parentDiv.removeEventListener('click', lookupClick);
     }
   }
 }
 
 // Création d'une semaine
 
-function weekTemplate (){
-  currentWeek += 1;
+function weekTemplate (createHistory = false) {
+  if (createHistory){
+    console.log('createHistory');
+    currentCreateHistory += 1;
+  }else{
+    currentCreateWeek += 1;
+  }
 
   if (dayRectangle.getDay() === 0){
     dayRectangle.setDate(dayRectangle.getDate() +1);
@@ -1043,39 +1051,24 @@ function weekTemplate (){
   mainDiv.appendChild(daysDiv);
 
   // Ajouter l'élément principal dans le container (par exemple `body')
-  weekContainer.appendChild(mainDiv);
+  if (createHistory){
+    weekContainer.insertBefore(mainDiv, weekContainer.firstChild);
+  }else{
+    weekContainer.appendChild(mainDiv);
+  }
 
   return mainDiv;
 }
 
-async function fetchReservations(allRectanglesInCreation) {
+async function fetchReservations(mainDiv) {
   try {
-
-    let weekRectangle = new Date();
-    let dayOfWeek = weekRectangle.getDay(); // 0 = Dimanche, 1 = Lundi, etc.
-    let diffToMonday = (dayOfWeek + 6) % 7; // Trouver le décalage pour revenir à lundi (si on est dimanche, ce sera 6)
-
-    if (dayOfWeek === 0) {
-      weekRectangle.setDate(weekRectangle.getDate() + 1); // Revenir au lundi
-    }else if (dayOfWeek === 6){
-      weekRectangle.setDate(weekRectangle.getDate() + 2); // Revenir au lundi
-    }else{
-      weekRectangle.setDate(weekRectangle.getDate() - diffToMonday); // Revenir au lundi
-    }
-
-    weekRectangle.setDate(weekRectangle.getDate() + 7 * (currentWeek-1));
-    weekRectangle = weekRectangle.getFullYear() + '-' +
-        String(weekRectangle.getMonth() + 1).padStart(2, '0') + '-' +
-        String(weekRectangle.getDate()).padStart(2, '0');
-
-    const sitesId = await getSites();
-    const siteId = sitesId.find(site => site.name === switchSiteSelected.name).id;
-
-    if (!weekReservationData.some(entry => entry.date === weekRectangle && entry.site_id === siteId)) {
-      await getWeekReservation(siteId, weekRectangle);
+    if (!weekReservationData.some(entry => entry.date === mainDiv.id)) {
+      await getWeekReservation(mainDiv.id);
     }
 
     const users = await getUsers();
+
+    const allRectanglesInCreation = mainDiv.querySelectorAll(".big_rectangle, .small_rectangle");
 
     allRectanglesInCreation.forEach(rectangle => {
       const resaRectangle = reservationData.filter(reservation => reservation.date === rectangle.id && reservation.site_id === switchSiteSelected.id);
@@ -1084,6 +1077,9 @@ async function fetchReservations(allRectanglesInCreation) {
 
       if (resaRectangle.length === 0){
         rectangle.style.backgroundColor = '#FFA178';
+      }else{
+        rectangle.addEventListener('click', lookupClick);
+        rectangle.style.backgroundColor = '#FFE371';
       }
 
 
@@ -1111,18 +1107,11 @@ async function fetchReservations(allRectanglesInCreation) {
   }
 }
 
-function createWeek () {
+function createWeek (createHistory = false) {
 
-  const mainDiv = weekTemplate();
+  const mainDiv = weekTemplate(createHistory);
 
-  const allRectanglesInCreation = mainDiv.querySelectorAll(".big_rectangle, .small_rectangle");
-
-  allRectanglesInCreation.forEach(rect => {
-    rect.removeEventListener('click', lookupClick);
-    rect.addEventListener('click', lookupClick);
-  });
-
-  fetchReservations(allRectanglesInCreation);
+  fetchReservations(mainDiv);
 
 }
 
@@ -1138,10 +1127,17 @@ window.onload = async function () {
   sitesSelection();
 
   document.querySelectorAll('.main').forEach(e => e.remove());
-  currentWeek = 0;
+  currentCreateWeek = 0;
   dayRectangle = new Date();
+  /*dayRectangle.setDate(dayRectangle.getDate() - 7 * 3);*/
 
   createWeek();
   createWeek();
-  createWeek(); 
+  createWeek();
+
+  // Faire défiler de manière fluide
+  /*weekContainer.scrollTo({
+    left: 3 * weekContainer.clientWidth,
+  });*/
+
 };

@@ -914,8 +914,8 @@ def cancel_reservation(domaine):
     return response
 
 #Lister toutes les réservations pour un site pour une semaine donnée
-@app.route('/<domaine>/reservations/site/<site_id>/week', methods=['GET'])
-def get_reservations_for_site_in_a_week(domaine, site_id):
+@app.route('/<domaine>/reservations/week', methods=['GET'])
+def get_reservations_in_a_week(domaine):
     start_date = request.args.get('start_date')
     end_date = (datetime.strptime(start_date, '%Y-%m-%d') + timedelta(days=5)).strftime('%Y-%m-%d')
 
@@ -935,11 +935,10 @@ def get_reservations_for_site_in_a_week(domaine, site_id):
         JOIN 
             %s u ON r.user_id = u.id
         WHERE 
-            r.site_id = '%s'
-            AND r.date BETWEEN '%s' AND '%s'
+            r.date BETWEEN '%s' AND '%s'
         ORDER BY 
             r.date
-    ''' % (domaineReservation, domaineUser, site_id, start_date, end_date)
+    ''' % (domaineReservation, domaineUser, start_date, end_date)
     cur.execute(query)
     rows = cur.fetchall()
 
