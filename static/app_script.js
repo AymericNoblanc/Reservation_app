@@ -7,6 +7,7 @@ let User = null;
 let sitesData = null;
 let usersData = null;
 let reservationData = null;
+let weekReservationData = [{date: "", site_id: ""}];
 
 const weekLimit = 12
 let currentWeek = 0;
@@ -94,7 +95,11 @@ async function getWeekReservation(siteId, date) {
 
     reservationData = Object.values({ ...reservationData});
 
-
+    const newAPIcall = {
+      date: date,
+      site_id: siteId
+    };
+    weekReservationData.push(newAPIcall);
 
   } catch (error) {
     console.error('Erreur:', error);
@@ -123,7 +128,8 @@ async function createReservation(siteId, date) {
 
     const newReservation = {
       user_id: User.id,
-      date: date
+      date: date,
+      site_id: siteId
     };
 
     reservationData.push(newReservation);
@@ -158,7 +164,7 @@ async function deleteReservation(siteId, date) {
     const dateToRemove = date;
 
     reservationData = reservationData.filter(reservation =>
-        !(reservation.user_id === userIdToRemove && reservation.date === dateToRemove)
+        !(reservation.user_id === userIdToRemove && reservation.date === dateToRemove && reservation.site_id === siteId)
     )
 
     console.log('Réservation supprimée:', data);
@@ -535,8 +541,6 @@ function sitesSelection() {
     }
     navContainer.insertBefore(siteDiv, navContainer.firstChild);
   });
-  console.log(animation.style.marginLeft);
-
 
   // Gérer les clics sur les autres éléments
   document.querySelectorAll('.sites').forEach(site => {
@@ -555,7 +559,6 @@ function sitesSelection() {
       animation.style.width = 100 - 6 + 'px'; // Largeur de l'élément sélectionné (enlever les marges)
 
       document.querySelectorAll('.main').forEach(e => e.remove());
-      reservationData = null;
 
       currentWeek = 0;
       dayRectangle = new Date();
@@ -847,7 +850,7 @@ function lookupClick(event) {
 
   lookupRectangle.appendChild(reservationListDiv);
 
-  const resaRectangle = reservationData.filter(reservation => reservation.date === lookupRectangle.id);
+  const resaRectangle = reservationData.filter(reservation => reservation.date === lookupRectangle.id && reservation.site_id === switchSiteSelected.id);
 
   createNumResa(lookupRectangle, resaRectangle);
 
@@ -955,7 +958,7 @@ function checkCircleClick(event) {
         }
       });
 
-      const resaRectangle = reservationData.filter(reservation => reservation.date === parentDiv.id && reservation.user_id !== User.id).slice(0, maxResa);
+      const resaRectangle = reservationData.filter(reservation => reservation.date === parentDiv.id && reservation.site_id === switchSiteSelected.id && reservation.user_id !== User.id).slice(0, maxResa);
 
       resaRectangle.forEach(reservation => {
         const circle = createReservationCircle(usersData.find(user => user.id === reservation.user_id), parentDiv);
@@ -984,6 +987,9 @@ function weekTemplate (){
   // Créer l'élément principal contenant la semaine et les rectangles
   const mainDiv = document.createElement("div");
   mainDiv.classList.add("main");
+  mainDiv.id = dayRectangle.getFullYear() + '-' +
+      String(dayRectangle.getMonth() + 1).padStart(2, '0') + '-' +
+      String(dayRectangle.getDate()).padStart(2, '0');
 
   // Créer l'élément p pour la semaine
   const weekElement = document.createElement("p");
@@ -1065,12 +1071,14 @@ async function fetchReservations(allRectanglesInCreation) {
     const sitesId = await getSites();
     const siteId = sitesId.find(site => site.name === switchSiteSelected.name).id;
 
-    await getWeekReservation(siteId, weekRectangle);
+    if (!weekReservationData.some(entry => entry.date === weekRectangle && entry.site_id === siteId)) {
+      await getWeekReservation(siteId, weekRectangle);
+    }
 
     const users = await getUsers();
 
     allRectanglesInCreation.forEach(rectangle => {
-      const resaRectangle = reservationData.filter(reservation => reservation.date === rectangle.id);
+      const resaRectangle = reservationData.filter(reservation => reservation.date === rectangle.id && reservation.site_id === switchSiteSelected.id);
 
       createNumResa(rectangle, resaRectangle);
 
@@ -1093,7 +1101,7 @@ async function fetchReservations(allRectanglesInCreation) {
       });
 
       const checkCircle = rectangle.querySelector('.self-circle');
-      if (reservationData.find(reservation => reservation.date === rectangle.id && reservation.user_id === User.id)) {
+      if (reservationData.find(reservation => reservation.date === rectangle.id && reservation.user_id === User.id && reservation.site_id === switchSiteSelected.id)) {
         checkCircle.classList.add('self-circle-active');
       }
     });

@@ -928,7 +928,8 @@ def get_reservations_for_site_in_a_week(domaine, site_id):
     query = '''
         SELECT 
             r.date, 
-            u.id AS user_id
+            u.id AS user_id,
+            r.site_id
         FROM 
             %s r
         JOIN 
@@ -946,7 +947,8 @@ def get_reservations_for_site_in_a_week(domaine, site_id):
     for row in rows:
         reservations.append({
             "date": row[0].strftime('%Y-%m-%d'),
-            "user_id": row[1]
+            "user_id": row[1],
+            "site_id": row[2]
         })
 
     cur.close()
