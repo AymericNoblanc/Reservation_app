@@ -11,8 +11,6 @@ body {
 
 
 
-
-
 /* La partie du haut avec la séléction du site et le profile */
 
 nav {
@@ -342,7 +340,7 @@ nav .siteSlideAnimation {
   font-weight: bold;
   border-radius: 1.7380vh;
   box-shadow: 0 0.5348vh 1.0695vh rgba(0, 0, 0, 0.2), 0 0.8021vh 2.6738vh rgba(0, 0, 0, 0.19);
-  z-index: 2;
+  z-index: 20;
   transition: width 0.3s ease, height 0.3s ease, left 0.3s ease, top 0.3s ease, bottom 0.3s ease;
 }
 

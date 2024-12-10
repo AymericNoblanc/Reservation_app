@@ -234,7 +234,7 @@ async function logoutUser() {
 
 function closeProfileClick() {
 
-  profileRectangle.style.left = `${(selectUserCircle.getBoundingClientRect().left -285) * 100 / RATIO}vh`;
+  profileRectangle.style.left = `${(profileRectangle.getBoundingClientRect().left)}px`;
 
   const overlay = document.getElementById('overlayProfile');
   overlay.remove();
@@ -249,8 +249,8 @@ function closeProfileClick() {
 
 
   setTimeout(() => {
-    profileRectangle.style.left = `${(selectUserCircle.getBoundingClientRect().left + 20) * 100 / RATIO}vh`;
-    profileRectangle.style.top = `${(selectUserCircle.getBoundingClientRect().top + 20) * 100 / RATIO}vh`;
+    profileRectangle.style.left = `${(selectUserCircle.offsetLeft + 20)}px`;
+    profileRectangle.style.top = `${(selectUserCircle.offsetTop + 20)}px`;
     profileRectangle.style.width = `${0 * 100 / RATIO}vh`;
     profileRectangle.style.height = `${0 * 100 / RATIO}vh`;
   }, 1)
@@ -267,8 +267,8 @@ selectUserCircle.addEventListener("click", () => {
   profileRectangle = document.createElement("div");
   profileRectangle.classList.add("profile_rectangle");
 
-  profileRectangle.style.left = `${(selectUserCircle.getBoundingClientRect().left + 20) * 100 / RATIO}vh`;
-  profileRectangle.style.top = `${(selectUserCircle.getBoundingClientRect().top + 20) * 100 / RATIO}vh`;
+  profileRectangle.style.left = `${(selectUserCircle.offsetLeft + 20)}px`;
+  profileRectangle.style.top = `${(selectUserCircle.offsetTop + 20)}px`;
 
   const overlay = document.createElement("div");
   overlay.id = 'overlayProfile';
@@ -291,12 +291,11 @@ selectUserCircle.addEventListener("click", () => {
     profileRectangle.style.height = `${550 * 100 / RATIO}vh`;
     profileRectangle.style.width = `${320 * 100 / RATIO}vh`;
 
-    profileRectangle.style.top = `${30 * 100 / RATIO}vh`;
+    const rectangleTop = document.querySelector('.big_rectangle').offsetTop - (135 * window.innerHeight / 844);
+    const rectangleLeft = document.querySelector('.big_rectangle').offsetLeft;
 
-    const windowWidth = window.innerWidth;
-    const bigRectangleWidth = document.querySelector('.big_rectangle').offsetWidth;
-
-    profileRectangle.style.left = `${((windowWidth / 2) - (bigRectangleWidth / 2)) * 100 / RATIO}vh`;
+    profileRectangle.style.top = `${rectangleTop}px`;
+    profileRectangle.style.left = `${rectangleLeft}px`;
 
   }, 1)
 
@@ -759,14 +758,6 @@ function createNumResa(rectangle, resaRectangle) {
 let lookupRectangle;
 function lookupRectangleClick() {
 
-  const dayLookupRectangle = lookupRectangle.querySelector(".dayOfTheWeek").textContent;
-
-  if (dayLookupRectangle === 'Mercredi') {
-    lookupRectangle.style.left = `${lookupRectangle.getBoundingClientRect().left * 100 / RATIO}vh`; // Adjust left position
-  } else if (dayLookupRectangle === 'Vendredi') {
-    lookupRectangle.style.left = `${lookupRectangle.getBoundingClientRect().left * 100 / RATIO}vh`; // Adjust left position
-  }
-
   const overlay = document.getElementById('overlayLookup');
   overlay.remove();
 
@@ -783,10 +774,10 @@ function lookupRectangleClick() {
   jourNum.offsetHeight;
   jourNum.style.animation = 'growDayNum 0.3s ease-in reverse';
 
-  lookupRectangle.style.left = `${formerRectangle.getBoundingClientRect().left * 100 / RATIO}vh`;
-  lookupRectangle.style.top = `${formerRectangle.getBoundingClientRect().top * 100 / RATIO}vh`;
-  lookupRectangle.style.width = `${formerRectangle.getBoundingClientRect().width * 100 / RATIO}vh`;
-  lookupRectangle.style.height = `${formerRectangle.getBoundingClientRect().height * 100 / RATIO}vh`;
+  lookupRectangle.style.left = `${formerRectangle.getBoundingClientRect().left}px`;
+  lookupRectangle.style.top = `${formerRectangle.getBoundingClientRect().top}px`;
+  lookupRectangle.style.width = `${formerRectangle.getBoundingClientRect().width}px`;
+  lookupRectangle.style.height = `${formerRectangle.getBoundingClientRect().height}px`;
 
   const lookupRectangleNames = lookupRectangle.querySelectorAll(".lookup_list_name");
   lookupRectangleNames.forEach(name => {
@@ -812,12 +803,12 @@ function lookupRectangleClick() {
 
 function lookupClick(event) {
 
-  const rect = this.getBoundingClientRect();
-  const clickY = event.clientY - rect.top;
-  const clickX = event.clientX - rect.left;// Y coordinate of the click relative to the top of the div
-  const divWidth = rect.width;
+  const boundingClientRect = this.getBoundingClientRect();
+  const clickY = event.clientY - boundingClientRect.top;
+  const clickX = event.clientX - boundingClientRect.left;// Y coordinate of the click relative to the top of the div
+  const divWidth = boundingClientRect.width;
 
-  if ((clickY < 50) && (clickX > divWidth - 50)) {
+  if ((clickY < (50 * (window.innerHeight / 844))) && (clickX > divWidth - (50 * (window.innerHeight / 844)))) {
     return;
   }
 
@@ -861,10 +852,10 @@ function lookupClick(event) {
   document.body.appendChild(lookupRectangle);
 
   lookupRectangle.style.position = 'absolute';
-  lookupRectangle.style.left = `${this.getBoundingClientRect().left * 100 / RATIO}vh`;
-  lookupRectangle.style.top = `${this.getBoundingClientRect().top * 100 / RATIO}vh`;
-  lookupRectangle.style.width = `${this.getBoundingClientRect().width * 100 / RATIO}vh`;
-  lookupRectangle.style.height = `${this.getBoundingClientRect().height * 100 / RATIO}vh`;
+  lookupRectangle.style.left = `${boundingClientRect.left}px`;
+  lookupRectangle.style.top = `${boundingClientRect.top}px`;
+  lookupRectangle.style.width = `${boundingClientRect.width}px`;
+  lookupRectangle.style.height = `${boundingClientRect.height}px`;
 
   const reservationListDiv = document.createElement('div');
   reservationListDiv.classList.add('lookup_list');
@@ -900,18 +891,21 @@ function lookupClick(event) {
     lookupRectangle.style.height = `${400 * 100 / RATIO}vh`;
     lookupRectangle.style.width = `${320 * 100 / RATIO}vh`;
 
+    const rectangleTop = document.querySelector('.big_rectangle').offsetTop + (19 * window.innerHeight / 844);
+    const rectangleLeft = document.querySelector('.big_rectangle').offsetLeft;
+
     if (this.querySelector(".dayOfTheWeek").textContent === 'Lundi') {
-      lookupRectangle.style.top = `${(this.getBoundingClientRect().top + 15) * 100 / RATIO}vh`; // Adjust left position
+      lookupRectangle.style.top = `${rectangleTop}px`; // Adjust left position
     } else if (this.querySelector(".dayOfTheWeek").textContent === 'Mardi') {
-      lookupRectangle.style.top = `${(this.getBoundingClientRect().top - 135) * 100 / RATIO}vh`; // Adjust left position
+      lookupRectangle.style.top = `${rectangleTop}px`; // Adjust left position
     } else if (this.querySelector(".dayOfTheWeek").textContent === 'Mercredi') {
-      lookupRectangle.style.left = `${(this.getBoundingClientRect().left - 170) * 100 / RATIO}vh`; // Adjust left position
-      lookupRectangle.style.top = `${(this.getBoundingClientRect().top - 135) * 100 / RATIO}vh`; // Adjust left position
+      lookupRectangle.style.left = `${rectangleLeft}px`; // Adjust left position
+      lookupRectangle.style.top = `${rectangleTop}px`; // Adjust left position
     } else if (this.querySelector(".dayOfTheWeek").textContent === 'Jeudi') {
-      lookupRectangle.style.top = `${(this.getBoundingClientRect().top - 285) * 100 / RATIO}vh`; // Adjust left position
+      lookupRectangle.style.top = `${rectangleTop}px`; // Adjust left position
     } else if (this.querySelector(".dayOfTheWeek").textContent === 'Vendredi') {
-      lookupRectangle.style.left = `${(this.getBoundingClientRect().left - 170) * 100 / RATIO}vh`; // Adjust left position
-      lookupRectangle.style.top = `${(this.getBoundingClientRect().top - 285) * 100 / RATIO}vh`; // Adjust left position
+      lookupRectangle.style.left = `${rectangleLeft}px`; // Adjust left position
+      lookupRectangle.style.top = `${rectangleTop}px`; // Adjust left position
     }
 
     reservationListDiv.style.marginTop = "28%";
@@ -940,7 +934,7 @@ function lookupClick(event) {
 
   setTimeout(() => {
     lookupRectangle.style.left = 'auto';
-  }, 300)
+  }, 300000)
 }
 
 function checkCircleClick(event) {
