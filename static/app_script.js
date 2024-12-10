@@ -259,7 +259,7 @@ function closeProfileClick() {
 }
 
 let profileRectangle
-let selectUserCircle = document.getElementById("selectUser");
+let selectUserCircle = document.querySelector(".selectUser");
 selectUserCircle.addEventListener("click", () => {
 
   profileRectangle = document.createElement("div");
@@ -526,8 +526,8 @@ function sitesSelection() {
 
   navContainer.style.width = sitesData.length * 100 + 'px';
 
-  const animation = document.querySelector('.animation');
-  animation.style.width = 100 - 6 + 'px';
+  const siteSlideAnimation = document.querySelector('.siteSlideAnimation');
+  siteSlideAnimation.style.width = 100 - 6 + 'px';
 
   sitesData.slice().reverse().forEach(function (site, index) {
     index = sitesData.length - 1 - index;
@@ -537,7 +537,7 @@ function sitesSelection() {
     siteDiv.textContent = site.display_name;
     if (index === 0){
       siteDiv.classList.add('active');
-      animation.style.marginLeft = '3px';
+      siteSlideAnimation.style.marginLeft = '3px';
     }
     navContainer.insertBefore(siteDiv, navContainer.firstChild);
   });
@@ -555,10 +555,10 @@ function sitesSelection() {
 
       // Déplacer l'animation
       const marginLeft = this.id * 100 + 3; // Valeur "left" à partir de l'attribut data target
-      animation.style.marginLeft = marginLeft + 'px';
-      animation.style.width = 100 - 6 + 'px'; // Largeur de l'élément sélectionné (enlever les marges)
+      siteSlideAnimation.style.marginLeft = marginLeft + 'px';
+      siteSlideAnimation.style.width = 100 - 6 + 'px'; // Largeur de l'élément sélectionné (enlever les marges)
 
-      document.querySelectorAll('.main').forEach(week => {
+      document.querySelectorAll('.oneWeekContainer').forEach(week => {
         if (weekReservationData.some(entry => entry.date === week.id)) {
           const allRectangle = week.querySelectorAll(".big_rectangle, .small_rectangle");
           allRectangle.forEach(rectangle => {
@@ -585,7 +585,7 @@ document.addEventListener('gesturestart', function (e) {
 
 // Gestion du scroll entre les différentes semaines
 
-const weekContainer = document.getElementById("weekSelector");
+const weekContainer = document.querySelector(".weekContainer");
 function handleInfiniteScroll () {
   const endOfScrollRight = weekContainer.scrollLeft + 2 * weekContainer.clientWidth >= weekContainer.scrollWidth - 5; // Détecte la fin du scroll
   if (endOfScrollRight && currentCreateWeek < weekLimit) {
@@ -603,7 +603,7 @@ function handleInfiniteScroll () {
         String(targetDate.getMonth() + 1).padStart(2, '0') + '-' +
         String(targetDate.getDate()).padStart(2, '0');
 
-    fetchReservations(weekContainer.querySelector(`.main[id='${targetDateID}']`));
+    fetchReservations(weekContainer.querySelector(`.oneWeekContainer[id='${targetDateID}']`));
   }
 
   const scrollLeft = weekContainer.scrollLeft; // Position actuelle du scroll
@@ -615,7 +615,7 @@ weekContainer.addEventListener("scroll", handleInfiniteScroll);
 
 let currentIndex = 0;
 function scrollToIndex(index) {
-  const items = document.querySelectorAll('.container > div');
+  const items = document.querySelectorAll('.weekContainer > div');
 
   // Ajuster l'index pour rester dans les limites
   if (index < 0) index = 0;
@@ -1013,13 +1013,13 @@ function weekTemplate (createHistory = false) {
 
   // Créer l'élément principal contenant la semaine et les rectangles
   const mainDiv = document.createElement("div");
-  mainDiv.classList.add("main");
+  mainDiv.classList.add("oneWeekContainer");
   mainDiv.id = weekDateID
 
   // Créer l'élément p pour la semaine
-  const weekElement = document.createElement("p");
-  weekElement.classList.add("week");
-  weekElement.textContent = `Semaine du ${weekDateID.split("-")[2]}/${weekDateID.split("-")[1]}`;
+  const weekTitle = document.createElement("p");
+  weekTitle.classList.add("weekTitle");
+  weekTitle.textContent = `Semaine du ${weekDateID.split("-")[2]}/${weekDateID.split("-")[1]}`;
 
   // Créer le conteneur principal des jours
   const daysDiv = document.createElement("div");
@@ -1064,7 +1064,7 @@ function weekTemplate (createHistory = false) {
   daysDiv.appendChild(smallDaysDiv);
 
   // Ajouter la semaine et les jours dans l'élément principal
-  mainDiv.appendChild(weekElement);
+  mainDiv.appendChild(weekTitle);
   mainDiv.appendChild(daysDiv);
 
   // Ajouter l'élément principal dans le container (par exemple `body')
@@ -1143,7 +1143,7 @@ window.onload = async function () {
 
   sitesSelection();
 
-  document.querySelectorAll('.main').forEach(e => e.remove());
+  document.querySelectorAll('.oneWeekContainer').forEach(e => e.remove());
   currentCreateWeek = 0;
 
   actualMondayDate.setDate(actualMondayDate.getDate() + 2); // Si c'est le week end charger la semaine suivante
