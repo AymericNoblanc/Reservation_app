@@ -15,6 +15,8 @@ let currentCreateHistoryTemplate = 1;
 let currentCreateHistoryFetch = 2;
 let actualMondayDate = new Date();
 
+const RATIO = 748;
+
 // API call :
 
 function URLformator(str) {
@@ -75,6 +77,8 @@ async function getUsers() {
 
     selectUserCircle.style.backgroundColor = User.color;
     selectUserCircle.textContent = User.initial;
+    selectUserCircle.style.position = 'relative';
+    selectUserCircle.style.marginLeft = '11%';
 
     return usersData;
 
@@ -230,7 +234,7 @@ async function logoutUser() {
 
 function closeProfileClick() {
 
-  profileRectangle.style.left = `${selectUserCircle.getBoundingClientRect().left -285}px`;
+  profileRectangle.style.left = `${(profileRectangle.getBoundingClientRect().left)}px`;
 
   const overlay = document.getElementById('overlayProfile');
   overlay.remove();
@@ -245,10 +249,10 @@ function closeProfileClick() {
 
 
   setTimeout(() => {
-    profileRectangle.style.left = `${selectUserCircle.getBoundingClientRect().left + 20}px`;
-    profileRectangle.style.top = `${selectUserCircle.getBoundingClientRect().top + 20}px`;
-    profileRectangle.style.width = "0px";
-    profileRectangle.style.height = "0px";
+    profileRectangle.style.left = `${(selectUserCircle.offsetLeft + 20)}px`;
+    profileRectangle.style.top = `${(selectUserCircle.offsetTop + 20)}px`;
+    profileRectangle.style.width = `${0 * 100 / RATIO}vh`;
+    profileRectangle.style.height = `${0 * 100 / RATIO}vh`;
   }, 1)
 
   setTimeout(() => {
@@ -257,14 +261,14 @@ function closeProfileClick() {
 }
 
 let profileRectangle
-let selectUserCircle = document.getElementById("selectUser");
+let selectUserCircle = document.querySelector(".selectUser");
 selectUserCircle.addEventListener("click", () => {
 
   profileRectangle = document.createElement("div");
   profileRectangle.classList.add("profile_rectangle");
 
-  profileRectangle.style.left = `${selectUserCircle.getBoundingClientRect().left + 20}px`;
-  profileRectangle.style.top = `${selectUserCircle.getBoundingClientRect().top + 20}px`;
+  profileRectangle.style.left = `${(selectUserCircle.offsetLeft + 20)}px`;
+  profileRectangle.style.top = `${(selectUserCircle.offsetTop + 20)}px`;
 
   const overlay = document.createElement("div");
   overlay.id = 'overlayProfile';
@@ -284,15 +288,14 @@ selectUserCircle.addEventListener("click", () => {
   document.body.insertBefore(profileRectangle, document.body.firstChild);
 
   setTimeout(() => {
-    profileRectangle.style.height = '550px';
-    profileRectangle.style.width = '320px';
+    profileRectangle.style.height = `${550 * 100 / RATIO}vh`;
+    profileRectangle.style.width = `${320 * 100 / RATIO}vh`;
 
-    profileRectangle.style.top = '30px';
+    const rectangleTop = document.querySelector('.big_rectangle').offsetTop - (135 * window.innerHeight / 844);
+    const rectangleLeft = document.querySelector('.big_rectangle').offsetLeft;
 
-    const windowWidth = window.innerWidth;
-    const bigRectangleWidth = document.querySelector('.big_rectangle').offsetWidth;
-
-    profileRectangle.style.left = `${(windowWidth / 2) - (bigRectangleWidth / 2)}px`;
+    profileRectangle.style.top = `${rectangleTop}px`;
+    profileRectangle.style.left = `${rectangleLeft}px`;
 
   }, 1)
 
@@ -522,10 +525,10 @@ function sitesSelection() {
 
   switchSiteSelected = sitesData[0];
 
-  navContainer.style.width = sitesData.length * 100 + 'px';
+  navContainer.style.width = sitesData.length * 100 * 100 / RATIO + 'vh';
 
-  const animation = document.querySelector('.animation');
-  animation.style.width = 100 - 6 + 'px';
+  const siteSlideAnimation = document.querySelector('.siteSlideAnimation');
+  siteSlideAnimation.style.width = `${94 * 100 / RATIO}vh`; // 100 - 6 pour la marge
 
   sitesData.slice().reverse().forEach(function (site, index) {
     index = sitesData.length - 1 - index;
@@ -535,7 +538,7 @@ function sitesSelection() {
     siteDiv.textContent = site.display_name;
     if (index === 0){
       siteDiv.classList.add('active');
-      animation.style.marginLeft = '3px';
+      siteSlideAnimation.style.marginLeft = `${3 * 100 / RATIO}vh`;
     }
     navContainer.insertBefore(siteDiv, navContainer.firstChild);
   });
@@ -553,10 +556,10 @@ function sitesSelection() {
 
       // Déplacer l'animation
       const marginLeft = this.id * 100 + 3; // Valeur "left" à partir de l'attribut data target
-      animation.style.marginLeft = marginLeft + 'px';
-      animation.style.width = 100 - 6 + 'px'; // Largeur de l'élément sélectionné (enlever les marges)
+      siteSlideAnimation.style.marginLeft = marginLeft * 100 / RATIO + 'vh';
+      siteSlideAnimation.style.width = `${94 * 100 / RATIO}vh`; // 100 - 6 pour la marge
 
-      document.querySelectorAll('.main').forEach(week => {
+      document.querySelectorAll('.oneWeekContainer').forEach(week => {
         if (weekReservationData.some(entry => entry.date === week.id)) {
           const allRectangle = week.querySelectorAll(".big_rectangle, .small_rectangle");
           allRectangle.forEach(rectangle => {
@@ -583,7 +586,7 @@ document.addEventListener('gesturestart', function (e) {
 
 // Gestion du scroll entre les différentes semaines
 
-const weekContainer = document.getElementById("weekSelector");
+const weekContainer = document.querySelector(".weekContainer");
 function handleInfiniteScroll () {
   const endOfScrollRight = weekContainer.scrollLeft + 2 * weekContainer.clientWidth >= weekContainer.scrollWidth - 5; // Détecte la fin du scroll
   if (endOfScrollRight && currentCreateWeek < weekLimit) {
@@ -601,7 +604,7 @@ function handleInfiniteScroll () {
         String(targetDate.getMonth() + 1).padStart(2, '0') + '-' +
         String(targetDate.getDate()).padStart(2, '0');
 
-    fetchReservations(weekContainer.querySelector(`.main[id='${targetDateID}']`));
+    fetchReservations(weekContainer.querySelector(`.oneWeekContainer[id='${targetDateID}']`));
   }
 
   const scrollLeft = weekContainer.scrollLeft; // Position actuelle du scroll
@@ -613,7 +616,7 @@ weekContainer.addEventListener("scroll", handleInfiniteScroll);
 
 let currentIndex = 0;
 function scrollToIndex(index) {
-  const items = document.querySelectorAll('.container > div');
+  const items = document.querySelectorAll('.weekContainer > div');
 
   // Ajuster l'index pour rester dans les limites
   if (index < 0) index = 0;
@@ -680,7 +683,7 @@ function createReservationCircle(user, rectangle) {
   }
 
   // Appliquer la position gauche (left) au cercle pour le décaler
-  circle.style.left = `${leftPosition}px`;
+  circle.style.left = `${leftPosition * 100 / RATIO}vh`;
   circle.textContent = user.initial;
 
   circle.style.backgroundColor = user.color;
@@ -742,9 +745,9 @@ function createNumResa(rectangle, resaRectangle) {
   nbResa.textContent = resaRectangle.length;
 
   if (resaRectangle.length > 99){
-    nbResa.style.width = '35px';
+    nbResa.style.width = `${35 * 100 / RATIO}vh`;
     nbResa.style.borderRadius = '30%';
-    nbResa.style.right = '7px';
+    nbResa.style.right = `${7 * 100 / RATIO}vh`;
   }
 
   rectangle.appendChild(nbResa);
@@ -754,14 +757,6 @@ function createNumResa(rectangle, resaRectangle) {
 
 let lookupRectangle;
 function lookupRectangleClick() {
-
-  const dayLookupRectangle = lookupRectangle.querySelector(".dayOfTheWeek").textContent;
-
-  if (dayLookupRectangle === 'Mercredi') {
-    lookupRectangle.style.left = `${lookupRectangle.getBoundingClientRect().left}px`; // Adjust left position
-  } else if (dayLookupRectangle === 'Vendredi') {
-    lookupRectangle.style.left = `${lookupRectangle.getBoundingClientRect().left}px`; // Adjust left position
-  }
 
   const overlay = document.getElementById('overlayLookup');
   overlay.remove();
@@ -808,12 +803,12 @@ function lookupRectangleClick() {
 
 function lookupClick(event) {
 
-  const rect = this.getBoundingClientRect();
-  const clickY = event.clientY - rect.top;
-  const clickX = event.clientX - rect.left;// Y coordinate of the click relative to the top of the div
-  const divWidth = rect.width;
+  const boundingClientRect = this.getBoundingClientRect();
+  const clickY = event.clientY - boundingClientRect.top;
+  const clickX = event.clientX - boundingClientRect.left;// Y coordinate of the click relative to the top of the div
+  const divWidth = boundingClientRect.width;
 
-  if ((clickY < 50) && (clickX > divWidth - 50)) {
+  if ((clickY < (50 * (window.innerHeight / 844))) && (clickX > divWidth - (50 * (window.innerHeight / 844)))) {
     return;
   }
 
@@ -857,10 +852,10 @@ function lookupClick(event) {
   document.body.appendChild(lookupRectangle);
 
   lookupRectangle.style.position = 'absolute';
-  lookupRectangle.style.left = `${this.getBoundingClientRect().left}px`;
-  lookupRectangle.style.top = `${this.getBoundingClientRect().top}px`;
-  lookupRectangle.style.width = `${this.getBoundingClientRect().width}px`;
-  lookupRectangle.style.height = `${this.getBoundingClientRect().height}px`;
+  lookupRectangle.style.left = `${boundingClientRect.left}px`;
+  lookupRectangle.style.top = `${boundingClientRect.top}px`;
+  lookupRectangle.style.width = `${boundingClientRect.width}px`;
+  lookupRectangle.style.height = `${boundingClientRect.height}px`;
 
   const reservationListDiv = document.createElement('div');
   reservationListDiv.classList.add('lookup_list');
@@ -893,39 +888,42 @@ function lookupClick(event) {
 
   setTimeout(() => {
 
-    lookupRectangle.style.height = '400px';
-    lookupRectangle.style.width = '320px';
+    lookupRectangle.style.height = `${400 * 100 / RATIO}vh`;
+    lookupRectangle.style.width = `${320 * 100 / RATIO}vh`;
+
+    const rectangleTop = document.querySelector('.big_rectangle').offsetTop + (19 * window.innerHeight / 844);
+    const rectangleLeft = document.querySelector('.big_rectangle').offsetLeft;
 
     if (this.querySelector(".dayOfTheWeek").textContent === 'Lundi') {
-      lookupRectangle.style.top = `${this.getBoundingClientRect().top + 15}px`; // Adjust left position
+      lookupRectangle.style.top = `${rectangleTop}px`; // Adjust left position
     } else if (this.querySelector(".dayOfTheWeek").textContent === 'Mardi') {
-      lookupRectangle.style.top = `${this.getBoundingClientRect().top - 135}px`; // Adjust left position
+      lookupRectangle.style.top = `${rectangleTop}px`; // Adjust left position
     } else if (this.querySelector(".dayOfTheWeek").textContent === 'Mercredi') {
-      lookupRectangle.style.left = `${this.getBoundingClientRect().left - 170}px`; // Adjust left position
-      lookupRectangle.style.top = `${this.getBoundingClientRect().top - 135}px`; // Adjust left position
+      lookupRectangle.style.left = `${rectangleLeft}px`; // Adjust left position
+      lookupRectangle.style.top = `${rectangleTop}px`; // Adjust left position
     } else if (this.querySelector(".dayOfTheWeek").textContent === 'Jeudi') {
-      lookupRectangle.style.top = `${this.getBoundingClientRect().top - 285}px`; // Adjust left position
+      lookupRectangle.style.top = `${rectangleTop}px`; // Adjust left position
     } else if (this.querySelector(".dayOfTheWeek").textContent === 'Vendredi') {
-      lookupRectangle.style.left = `${this.getBoundingClientRect().left - 170}px`; // Adjust left position
-      lookupRectangle.style.top = `${this.getBoundingClientRect().top - 285}px`; // Adjust left position
+      lookupRectangle.style.left = `${rectangleLeft}px`; // Adjust left position
+      lookupRectangle.style.top = `${rectangleTop}px`; // Adjust left position
     }
 
     reservationListDiv.style.marginTop = "28%";
 
-    jour.style.fontSize = '32px';
-    jour.style.marginLeft = '20px';
+    jour.style.fontSize = `${32 * 100 / RATIO}vh`;
+    jour.style.marginLeft = `${20 * 100 / RATIO}vh`;
 
-    jourNum.style.fontSize = '20px';
-    jourNum.style.marginTop = '52px';
-    jourNum.style.marginLeft = '35px';
+    jourNum.style.fontSize = `${20 * 100 / RATIO}vh`;
+    jourNum.style.marginTop = `${52 * 100 / RATIO}vh`;
+    jourNum.style.marginLeft = `${35 * 100 / RATIO}vh`;
 
     const elements = reservationListDiv.querySelectorAll(".lookup_list_element");
     elements.forEach(element => {
 
       const circle = element.querySelector('.circle');
       circle.style.position = 'relative';
-      circle.style.left = '15px';
-      circle.style.bottom = '0px';
+      circle.style.left = `${15 * 100 / RATIO}vh`;
+      circle.style.bottom = `${0 * 100 / RATIO}vh`;
 
       const reservationName = element.querySelector('.lookup_list_name');
       reservationName.style.color = 'rgb(71, 71, 71)';
@@ -936,7 +934,7 @@ function lookupClick(event) {
 
   setTimeout(() => {
     lookupRectangle.style.left = 'auto';
-  }, 300)
+  }, 300000)
 }
 
 function checkCircleClick(event) {
@@ -1011,13 +1009,13 @@ function weekTemplate (createHistory = false) {
 
   // Créer l'élément principal contenant la semaine et les rectangles
   const mainDiv = document.createElement("div");
-  mainDiv.classList.add("main");
+  mainDiv.classList.add("oneWeekContainer");
   mainDiv.id = weekDateID
 
   // Créer l'élément p pour la semaine
-  const weekElement = document.createElement("p");
-  weekElement.classList.add("week");
-  weekElement.textContent = `Semaine du ${weekDateID.split("-")[2]}/${weekDateID.split("-")[1]}`;
+  const weekTitle = document.createElement("p");
+  weekTitle.classList.add("weekTitle");
+  weekTitle.textContent = `Semaine du ${weekDateID.split("-")[2]}/${weekDateID.split("-")[1]}`;
 
   // Créer le conteneur principal des jours
   const daysDiv = document.createElement("div");
@@ -1062,7 +1060,7 @@ function weekTemplate (createHistory = false) {
   daysDiv.appendChild(smallDaysDiv);
 
   // Ajouter la semaine et les jours dans l'élément principal
-  mainDiv.appendChild(weekElement);
+  mainDiv.appendChild(weekTitle);
   mainDiv.appendChild(daysDiv);
 
   // Ajouter l'élément principal dans le container (par exemple `body')
@@ -1141,7 +1139,7 @@ window.onload = async function () {
 
   sitesSelection();
 
-  document.querySelectorAll('.main').forEach(e => e.remove());
+  document.querySelectorAll('.oneWeekContainer').forEach(e => e.remove());
   currentCreateWeek = 0;
 
   actualMondayDate.setDate(actualMondayDate.getDate() + 2); // Si c'est le week end charger la semaine suivante
