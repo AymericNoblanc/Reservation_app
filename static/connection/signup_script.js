@@ -1,4 +1,5 @@
 let domaine = null;
+let domaineInURL = false;
 
 document.getElementById('signup-form').addEventListener('submit', async (event) => {
     try {
@@ -10,7 +11,7 @@ document.getElementById('signup-form').addEventListener('submit', async (event) 
         firstname = firstname.charAt(0).toUpperCase() + firstname.slice(1);
         let lastname = document.getElementById('lastname').value;
         lastname = lastname.charAt(0).toUpperCase() + lastname.slice(1);
-        if (domaine === null) {
+        if (!domaineInURL) {
             domaine = document.getElementById('domaine').value.toLowerCase();
         }
 
@@ -55,6 +56,7 @@ document.addEventListener('DOMContentLoaded', function() {
             domaineInput.parentElement.remove();
             document.querySelector('.signup-button').style.marginTop = '10px';
             domaine = domaineInput.value;
+            domaineInURL = true;
         }
     } catch (error) {
         document.getElementById('error-message').innerText = error;
