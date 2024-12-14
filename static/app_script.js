@@ -412,12 +412,51 @@ function createProfile() {
   function updateAvatarInitials() {
     profileAvatar.textContent = initialsInput.value.toUpperCase(); // Mettre à jour le texte de l'avatar
   }
-
-// Ajouter un écouteur d'événement pour l'input des initiales
   initialsInput.addEventListener('input', updateAvatarInitials);
+  updateAvatarInitials(); // Initialiser l'avatar avec la valeur actuelle des initiales au chargement
 
-// Initialiser l'avatar avec la valeur actuelle des initiales au chargement
-  updateAvatarInitials();
+// Fonction afin de ne pas que l'on puisse mettre n'importe quoi dans les noms et prénoms
+  const validRegex = /^[A-Za-zÀ-ÖØ-öø-ÿ' \-]+$/;
+
+  function addValidation(inputField) {
+    // Corriger les valeurs invalides après la saisie (ex. copier-coller)
+    inputField.addEventListener('input', function () {
+      const currentValue = inputField.value;
+
+      // Filtrer les caractères pour ne garder que ceux valides
+      const filteredValue = currentValue.split('').filter(char => validRegex.test(char)).join('');
+
+      // Trouver le premier caractère invalide
+      let invalidChar = '';
+      for (let char of inputField.value) {
+        if (!validRegex.test(char)) {
+          invalidChar = char;
+          break;
+        }
+      }
+
+      // Si la valeur a changé, la mettre à jour
+      if (currentValue !== filteredValue) {
+        inputField.value = filteredValue;
+      }
+
+      // Si un caractère invalide est trouvé, afficher un message d'erreur
+      if (invalidChar) {
+        inputField.setCustomValidity(`Caractère invalide: "${invalidChar}". Seuls les lettres, espaces, apostrophes et tirets sont autorisés.`);
+      } else {
+        inputField.setCustomValidity(''); // Réinitialiser la validité si tout est bon
+      }
+
+      // Déclencher la validation, ce qui affichera l'erreur si nécessaire
+      inputField.reportValidity();
+    });
+  }
+
+  const firstNameInput = document.querySelector('#first-name');
+  const lastNameInput = document.querySelector('#last-name');
+  addValidation(firstNameInput);
+  addValidation(lastNameInput);
+
 
 }
 
