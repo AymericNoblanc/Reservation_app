@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, request, render_template, make_response, redirect, render_template_string
 import psycopg2
+from psycopg2 import sql
 from datetime import datetime, timedelta
 from flask_cors import CORS
 import json
@@ -36,7 +37,7 @@ def check_auth_token(token):
         conn = get_db_connection()
         cur = conn.cursor()
 
-        query = '''
+        query = sql.SQL('''
             SELECT 
                 d.name
             FROM 
@@ -46,9 +47,9 @@ def check_auth_token(token):
             JOIN 
 	            domaine d on cr.domaine_id = d.id
             WHERE
-                token = '%s' AND expires_at > NOW()
-        ''' % (token)
-        cur.execute(query)
+                token = %s AND expires_at > NOW()
+        ''')
+        cur.execute(query, (token, ))
         row = cur.fetchone()
 
         cur.close()
@@ -69,7 +70,7 @@ def loginPOST():
     conn = get_db_connection()
     cur = conn.cursor()
 
-    query = '''
+    query = sql.SQL('''
         SELECT 
             c.password_hash, d.name, c.user_id, c.id
         FROM 
@@ -77,9 +78,9 @@ def loginPOST():
         JOIN 
             domaine d on c.domaine_id = d.id
         WHERE
-            c.email = '%s'
-    ''' % (email)
-    cur.execute(query)
+            c.email = %s
+    ''')
+    cur.execute(query, (email, ))
     rows = cur.fetchall()
 
     # Vérifier si l'utilisateur existe
@@ -99,22 +100,22 @@ def loginPOST():
     expires_at = datetime.now() + timedelta(weeks=52)
 
     # Mettre à jour dans la "base de données"
-    query = '''
-            INSERT INTO
-                cookie (credential_id, token, expires_at)
-            VALUES
-                ('%s', '%s', '%s')
-        ''' % (rows[0][3], token, expires_at)
-    cur.execute(query)
+    query = sql.SQL('''
+        INSERT INTO
+            cookie (credential_id, token, expires_at)
+        VALUES
+            (%s, %s, %s)
+    ''')
+    cur.execute(query, (rows[0][3], token, expires_at))
     conn.commit()
 
-    query = '''
+    query = sql.SQL('''
         INSERT INTO
             log (credential_id, request_type, request_data)
         VALUES
-            ('%s', 'connexion_login', '%s')
-    ''' % (rows[0][3], token)
-    cur.execute(query)
+            (%s, 'connexion_login', %s)
+    ''')
+    cur.execute(query, (rows[0][3], token ))
     conn.commit()
 
     cur.close()
@@ -138,15 +139,15 @@ def signupPOST():
     conn = get_db_connection()
     cur = conn.cursor()
 
-    query = '''
+    query = sql.SQL('''
         SELECT 
             *
         FROM 
             credential
         WHERE
-            email = '%s'
-    ''' % (email)
-    cur.execute(query)
+            email = %s
+    ''')
+    cur.execute(query, (email, ))
     rows = cur.fetchall()
 
     # Vérifier si l'email existe déjà
@@ -158,15 +159,15 @@ def signupPOST():
     conn = get_db_connection()
     cur = conn.cursor()
 
-    query = '''
+    query = sql.SQL('''
         SELECT 
             *
         FROM 
             domaine
         WHERE
-            code = '%s'
-    ''' % (domaine)
-    cur.execute(query)
+            code = %s
+    ''')
+    cur.execute(query, (domaine, ))
     rows = cur.fetchall()
 
     # Vérifier si le domaine existe
@@ -182,24 +183,24 @@ def signupPOST():
     # Hacher le mot de passe et l'enregistrer
     hashed_password = generate_password_hash(password)
 
-    query = '''
+    query = sql.SQL('''
         INSERT INTO
             credential (email, password_hash, domaine_id)
         VALUES
-            ('%s', '%s', '%s')
-    ''' % (email, hashed_password, domaine_id)
-    cur.execute(query)
+            (%s, %s, %s)
+    ''')
+    cur.execute(query, (email, hashed_password, domaine_id))
     conn.commit()
 
-    query = '''
+    query = sql.SQL('''
         SELECT
             id, user_id
         FROM
             credential
         WHERE
-            email = '%s'
-    ''' % (email)
-    cur.execute(query)
+            email = %s
+    ''')
+    cur.execute(query, (email, ))
     conn.commit()
     row = cur.fetchone()
 
@@ -208,13 +209,15 @@ def signupPOST():
 
     initial = str(firstname[0]) + str(lastname[0])
 
-    query = '''
+    query = sql.SQL('''
         INSERT INTO
-            %s (id, firstname, lastname, initial)
+            {domaine_user} (id, firstname, lastname, initial)
         VALUES
-            ('%s', '%s', '%s', '%s')
-    ''' % (domaineUser, user_id, firstname.replace("'", "''"), lastname.replace("'", "''"), initial)
-    cur.execute(query)
+            (%s, %s, %s, %s)
+    ''').format(
+        domaine_user=sql.Identifier(domaineUser)
+    )
+    cur.execute(query, (user_id, firstname.replace("'", "''"), lastname.replace("'", "''"), initial))
     conn.commit()
 
     # Générer un UUID pour le cookie
@@ -222,22 +225,22 @@ def signupPOST():
     expires_at = datetime.now() + timedelta(weeks=52)
 
     # Mettre à jour dans la "base de données"
-    query = '''
+    query = sql.SQL('''
             INSERT INTO
                 cookie (credential_id, token, expires_at)
             VALUES
-                ('%s', '%s', '%s')
-        ''' % (credential_id, token, expires_at)
-    cur.execute(query)
+                (%s, %s, %s)
+        ''')
+    cur.execute(query, (credential_id, token, expires_at))
     conn.commit()
 
-    query = '''
+    query = sql.SQL('''
         INSERT INTO
             log (credential_id, request_type, request_data)
         VALUES
-            ('%s', 'signup', '%s')
-    ''' % (credential_id, token)
-    cur.execute(query)
+            (%s, 'signup', %s)
+    ''')
+    cur.execute(query, (credential_id, token))
     conn.commit()
 
     cur.close()
@@ -318,7 +321,7 @@ def get_user_from_cookie(cookie):
     conn = get_db_connection()
     cur = conn.cursor()
 
-    query = '''
+    query = sql.SQL('''
         SELECT 
             cr.user_id, cr.id
         FROM 
@@ -326,9 +329,9 @@ def get_user_from_cookie(cookie):
         JOIN 
             credential cr on c.credential_id = cr.id
         WHERE
-            c.token = '%s'
-    ''' % (cookie)
-    cur.execute(query)
+            c.token = %s
+    ''')
+    cur.execute(query, (cookie, ))
     row = cur.fetchone()
 
     user = []
@@ -336,13 +339,13 @@ def get_user_from_cookie(cookie):
         "user_id": row[0]
     })
 
-    query = '''
+    query = sql.SQL('''
         INSERT INTO
             log (credential_id, request_type, request_data)
         VALUES
-            ('%s', 'connexion', '%s')
-    ''' % (row[1], cookie)
-    cur.execute(query)
+            (%s, 'connexion', %s)
+    ''')
+    cur.execute(query, (row[1], cookie))
     conn.commit()
 
     cur.close()
@@ -362,7 +365,7 @@ def cookie_logout():
         conn = get_db_connection()
         cur = conn.cursor()
 
-        query = '''
+        query = sql.SQL('''
             SELECT 
                 cr.id
             FROM 
@@ -370,26 +373,26 @@ def cookie_logout():
             JOIN 
                 credential cr on c.credential_id = cr.id
             WHERE
-                c.token = '%s'
-        ''' % (token)
-        cur.execute(query)
+                c.token = %s
+        ''')
+        cur.execute(query, (token, ))
         row = cur.fetchone()
 
-        query = '''
+        query = sql.SQL('''
             DELETE
             FROM cookie
-            WHERE token = '%s'
-        ''' % (token)
-        cur.execute(query)
+            WHERE token = %s
+        ''')
+        cur.execute(query, (token, ))
         conn.commit()
 
-        query = '''
+        query = sql.SQL('''
             INSERT INTO
                 log (credential_id, request_type, request_data)
             VALUES
-                ('%s', 'deconnexion', '%s')
-        ''' % (row[0], token)
-        cur.execute(query)
+                (%s, 'deconnexion', %s)
+        ''')
+        cur.execute(query, (row[0], token))
         conn.commit()
 
         cur.close()
@@ -680,7 +683,7 @@ def get_users(domaine):
 
     domaineUser = domaine + '_user'
 
-    query = '''
+    query = sql.SQL('''
         SELECT 
             d.id,
             d.firstname,
@@ -689,10 +692,12 @@ def get_users(domaine):
             d.initial,
             c.email
         FROM 
-            %s d
+            {domaine_user} d
         JOIN 
             credential c on d.id = c.user_id
-    ''' % (domaineUser)
+    ''').format(
+        domaine_user=sql.Identifier(domaineUser)
+    )
     cur.execute(query)
     rows = cur.fetchall()
 
@@ -723,14 +728,16 @@ def get_sites(domaine):
 
     domaineSite = domaine + '_site'
 
-    query = '''
+    query = sql.SQL('''
         SELECT 
             id,
             name,
             display_name
         FROM 
-            %s
-    ''' % (domaineSite)
+            {domaine_site}
+    ''').format(
+        domaine_site=sql.Identifier(domaineSite)
+    )
     cur.execute(query)
     rows = cur.fetchall()
 
@@ -750,6 +757,54 @@ def get_sites(domaine):
 
     return response
 
+#Lister toutes les réservations pour un site pour une semaine donnée
+@app.route('/<domaine>/reservations/week', methods=['GET'])
+def get_reservations_in_a_week(domaine):
+    start_date = request.args.get('start_date')
+    end_date = (datetime.strptime(start_date, '%Y-%m-%d') + timedelta(days=5)).strftime('%Y-%m-%d')
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    domaineReservation = domaine + '_reservation'
+    domaineUser = domaine + '_user'
+
+    query = sql.SQL('''
+        SELECT 
+            r.date, 
+            u.id AS user_id,
+            r.site_id
+        FROM 
+            {domaine_reservation} r
+        JOIN 
+            {domaine_user} u ON r.user_id = u.id
+        WHERE 
+            r.date BETWEEN %s AND %s
+        ORDER BY 
+            r.date
+    ''').format(
+        domaine_reservation=sql.Identifier(domaineReservation),
+        domaine_user=sql.Identifier(domaineUser)
+    )
+    cur.execute(query, (start_date, end_date))
+    rows = cur.fetchall()
+
+    reservations = []
+    for row in rows:
+        reservations.append({
+            "date": row[0].strftime('%Y-%m-%d'),
+            "user_id": row[1],
+            "site_id": row[2]
+        })
+
+    cur.close()
+    conn.close()
+
+    response = jsonify(reservations)
+    response.headers.add('Access-Control-Allow-Origin', '*')
+
+    return response
+
 #Route pour créer une réservation
 @app.route('/<domaine>/reservations', methods=['POST'])
 def create_reservation(domaine):
@@ -763,17 +818,18 @@ def create_reservation(domaine):
     domaineReservation = domaine + '_reservation'
 
     # Vérifier si une réservation existe pour cet employé à cette date
-    query = '''
-            SELECT *
-            FROM 
-                %s
-            WHERE
-                user_id = '%s'
-                AND date = '%s'
-                AND site_id = '%s'
-        ''' % (domaineReservation, user_id, date, site_id)
-    
-    cur.execute(query)
+    query = sql.SQL('''
+        SELECT *
+        FROM 
+           {domaine_reservation}
+        WHERE
+            user_id = %s
+            AND date = %s
+            AND site_id = %s
+    ''').format(
+        domaine_reservation=sql.Identifier(domaineReservation)
+    )
+    cur.execute(query, (user_id, date, site_id ))
     existing_reservation = cur.fetchone()
 
     if existing_reservation:
@@ -786,24 +842,26 @@ def create_reservation(domaine):
         return response, 400
 
     # Créer la réservation
-    query = '''
+    query = sql.SQL('''
         INSERT INTO
-            %s (user_id, site_id, date)
+            {domaine_reservation} (user_id, site_id, date)
         VALUES
-            ('%s', '%s', '%s')
-    ''' % (domaineReservation, user_id, site_id, date)
-    cur.execute(query)
+            (%s, %s, %s)
+    ''').format(
+        domaine_reservation=sql.Identifier(domaineReservation)
+    )
+    cur.execute(query, (user_id, site_id, date))
     conn.commit()
 
-    queryLog = '''
+    queryLog = sql.SQL('''
         INSERT INTO log (credential_id, request_type, request_data)
         VALUES (
             (SELECT id FROM credential WHERE user_id = %s),
             'Création réservation',
             %s
         )
-    '''
-    cur.execute(queryLog, (user_id, query))
+    ''')
+    cur.execute(queryLog, (user_id, cur.mogrify(query, (user_id, site_id, date)).decode('utf-8')))
     conn.commit()
 
     cur.close()
@@ -829,15 +887,17 @@ def update_user_data(domaine):
     domaineUser = domaine + '_user'
 
     # Créer la réservation
-    query = '''
-        UPDATE %s
-        SET firstname = '%s',
-            lastname = '%s',
-            color = '%s',
-            initial = '%s'
-        WHERE id = '%s';
-    ''' % (domaineUser, firstname, lastname, color, initial, user_id)
-    cur.execute(query)
+    query = sql.SQL('''
+        UPDATE {domaine_user}
+        SET firstname = %s,
+            lastname = %s,
+            color = %s,
+            initial = %s
+        WHERE id = %s;
+    ''').format(
+        domaine_user=sql.Identifier(domaineUser)
+    )
+    cur.execute(query, (firstname, lastname, color, initial, user_id))
     conn.commit()
 
     cur.close()
@@ -861,16 +921,18 @@ def cancel_reservation(domaine):
     domaineReservation = domaine + '_reservation'
 
     # Vérifier si une réservation existe pour cet employé à cette date
-    query = '''
-            SELECT *
-            FROM 
-                %s
-            WHERE
-                user_id = '%s'
-                AND date = '%s'
-                AND site_id = '%s'
-        ''' % (domaineReservation, user_id, date, site_id)
-    cur.execute(query)
+    query = sql.SQL('''
+        SELECT *
+        FROM 
+            {domaine_reservation}
+        WHERE
+            user_id = %s
+            AND date = %s
+            AND site_id = %s
+    ''').format(
+        domaine_reservation=sql.Identifier(domaineReservation)
+    )
+    cur.execute(query, (user_id, date, site_id))
     existing_reservation = cur.fetchone()
 
     if not existing_reservation:
@@ -883,77 +945,34 @@ def cancel_reservation(domaine):
         return response, 400
 
     # Supprimer la réservation
-    query = '''
+    query = sql.SQL('''
         DELETE FROM 
-            %s
+           {domaine_reservation}
         WHERE 
-            user_id = '%s' 
-            AND date = '%s'
-            AND site_id = '%s'
-    ''' % (domaineReservation, user_id, date, site_id)
-    cur.execute(query)
+            user_id = %s
+            AND site_id = %s 
+            AND date = %s
+    ''').format(
+        domaine_reservation=sql.Identifier(domaineReservation)
+    )
+    cur.execute(query, (user_id, site_id, date))
     conn.commit()
 
-    queryLog = '''
+    queryLog = sql.SQL('''
         INSERT INTO log (credential_id, request_type, request_data)
         VALUES (
             (SELECT id FROM credential WHERE user_id = %s),
             'Suppression réservation',
             %s
         )
-    '''
-    cur.execute(queryLog, (user_id, query))
+    ''')
+    cur.execute(queryLog, (user_id, cur.mogrify(query, (user_id, site_id, date)).decode('utf-8')))
     conn.commit()
 
     cur.close()
     conn.close()
 
     response = jsonify({"message": "Reservation deleted"})
-    response.headers.add('Access-Control-Allow-Origin', '*')
-
-    return response
-
-#Lister toutes les réservations pour un site pour une semaine donnée
-@app.route('/<domaine>/reservations/week', methods=['GET'])
-def get_reservations_in_a_week(domaine):
-    start_date = request.args.get('start_date')
-    end_date = (datetime.strptime(start_date, '%Y-%m-%d') + timedelta(days=5)).strftime('%Y-%m-%d')
-
-    conn = get_db_connection()
-    cur = conn.cursor()
-
-    domaineReservation = domaine + '_reservation'
-    domaineUser = domaine + '_user'
-
-    query = '''
-        SELECT 
-            r.date, 
-            u.id AS user_id,
-            r.site_id
-        FROM 
-            %s r
-        JOIN 
-            %s u ON r.user_id = u.id
-        WHERE 
-            r.date BETWEEN '%s' AND '%s'
-        ORDER BY 
-            r.date
-    ''' % (domaineReservation, domaineUser, start_date, end_date)
-    cur.execute(query)
-    rows = cur.fetchall()
-
-    reservations = []
-    for row in rows:
-        reservations.append({
-            "date": row[0].strftime('%Y-%m-%d'),
-            "user_id": row[1],
-            "site_id": row[2]
-        })
-
-    cur.close()
-    conn.close()
-
-    response = jsonify(reservations)
     response.headers.add('Access-Control-Allow-Origin', '*')
 
     return response

@@ -48,7 +48,6 @@ window.addEventListener('keydown',function(e) {
     }
 }, true);
 
-
 document.addEventListener('DOMContentLoaded', function() {
     try{
         const domaineInput = document.getElementById('domaine');
@@ -62,3 +61,45 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('error-message').innerText = error;
     }
 });
+
+// Fonction afin de ne pas que l'on puisse mettre n'importe quoi dans les noms et prénoms
+const validRegex = /^[A-Za-zÀ-ÖØ-öø-ÿ' \-]+$/;
+
+function addValidation(inputField) {
+    // Corriger les valeurs invalides après la saisie (ex. copier-coller)
+    inputField.addEventListener('input', function () {
+        const currentValue = inputField.value;
+
+        // Filtrer les caractères pour ne garder que ceux valides
+        const filteredValue = currentValue.split('').filter(char => validRegex.test(char)).join('');
+
+        // Trouver le premier caractère invalide
+        let invalidChar = '';
+        for (let char of inputField.value) {
+            if (!validRegex.test(char)) {
+                invalidChar = char;
+                break;
+            }
+        }
+
+        // Si la valeur a changé, la mettre à jour
+        if (currentValue !== filteredValue) {
+            inputField.value = filteredValue;
+        }
+
+        // Si un caractère invalide est trouvé, afficher un message d'erreur
+        if (invalidChar) {
+            inputField.setCustomValidity(`Caractère invalide: "${invalidChar}". Seuls les lettres, espaces, apostrophes et tirets sont autorisés.`);
+        } else {
+            inputField.setCustomValidity(''); // Réinitialiser la validité si tout est bon
+        }
+
+        // Déclencher la validation, ce qui affichera l'erreur si nécessaire
+        inputField.reportValidity();
+    });
+}
+
+const firstNameInput = document.querySelector('#firstname');
+const lastNameInput = document.querySelector('#lastname');
+addValidation(firstNameInput);
+addValidation(lastNameInput);
