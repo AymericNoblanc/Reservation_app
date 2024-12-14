@@ -1,3 +1,4 @@
+/* Style de base (pour téléphone donc en portrait) */
 
 body {
   display: flex;
@@ -627,6 +628,35 @@ input[type="range"]::-moz-range-thumb {
   border: 0.2674vh solid black;
   cursor: pointer;
 }
+
+
+
+
+
+
+/* Style pour les écrans d'ordinateur */
+
+@media screen and (aspect-ratio<=2) and (aspect-ratio>1) {
+  body {
+    /*background-color: #1ff41f;*/
+  }
+}
+
+
+
+
+
+/* Style pour les téléphone en mode paysage */
+
+@media screen and (aspect-ratio>2 ) {
+  body {
+    /*background-color: #1f1ff4;*/
+  }
+}
+
+
+
+
 
 
 

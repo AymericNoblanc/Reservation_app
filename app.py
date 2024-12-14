@@ -219,7 +219,7 @@ def signupPOST():
 
     # Générer un UUID pour le cookie
     token = str(uuid.uuid4())
-    expires_at = datetime.utcnow() + timedelta(weeks=52)
+    expires_at = datetime.now() + timedelta(weeks=52)
 
     # Mettre à jour dans la "base de données"
     query = '''
