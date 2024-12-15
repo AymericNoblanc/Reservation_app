@@ -128,14 +128,14 @@ nav .siteSlideAnimation {
   gap: 2.6738vh;
 }
 .top, .bottom{
-  margin: 0 auto !important;
+  margin: 0 auto;
   flex-direction: row;
 }
 
 
 .big_rectangle, .small_rectangle {
   position: relative;
-  margin: 0 auto !important;
+  margin: 0 auto;
   background-color: #EEEEEF;
   color: white;
   font-size: 3.2086vh;
@@ -334,7 +334,7 @@ nav .siteSlideAnimation {
 /* Lookup rectangle (rectangle qui pop quand on appuie sur une date) */
 
 .lookup_rectangle {
-  margin: 0 auto !important;
+  margin: 0 auto;
   background-color: #FFE371;
   color: white;
   font-size: 3.2086vh;
@@ -403,7 +403,7 @@ nav .siteSlideAnimation {
   position: absolute;
   width: 0;
   height: 0;
-  margin: 0 auto !important;
+  margin: 0 auto;
   background-color: #FFA178;
   color: white;
   font-size: 3.2086vh;
@@ -652,6 +652,93 @@ input[type="range"]::-moz-range-thumb {
   body {
     /*background-color: #1f1ff4;*/
   }
+
+  .weekTitle{
+    font-family: Arial, sans-serif;
+    color: rgb(0, 0, 0);
+    font-size: 25px;
+    font-weight: bold;
+    margin-bottom: 3.3422vh;
+    margin-top: 10px;
+  }
+
+  .days, .small, .top, .bottom {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    margin: 0 auto;
+    gap : 0;
+  }
+
+
+  .big_rectangle, .small_rectangle {
+    position: relative;
+    background-color: #EEEEEF;
+    color: white;
+    font-size: 3.2086vh;
+    font-weight: bold;
+    border-radius: 1.7380vh;
+    z-index: 0;
+    width: 120px;
+    height: 150px;
+    margin: 0 auto;
+    margin-left: 26px;
+  }
+
+
+  .dayOfTheWeek{
+    font-size: 15px;
+    margin-left: 12px;
+  }
+  @keyframes growDayOfTheWeek {
+    0% {
+      font-size: 2.6738vh;
+    }
+    100% {
+      font-size: 4.2781vh;
+    }
+  }
+
+
+  .dayNum{
+    font-size: 10px;
+    margin-left: 20px;
+    margin-top: 24px;
+  }
+  @keyframes growDayNum {
+    0% {
+      font-size: 1.8717vh;
+    }
+    100% {
+      font-size: 2.6738vh;
+    }
+  }
+
+
+  .self-circle {
+    width: 15px;
+    height: 15px;
+    border: 2px solid #A9A9A9; /* Dark gray border */
+  }
+  .self-circle-active {
+    border: 2px solid #3ab638; /* Dark gray border */
+  }
+  .self-circle-old {
+    width: 15px;
+    height: 15px;
+    border: 2px solid rgba(89, 88, 88, 0.20);
+  }
+
+
+  .nbResa{
+    width: 18px;
+    height: 18px;
+    font-size: 11px;
+  }
+
+
+
+
 }
 
 
