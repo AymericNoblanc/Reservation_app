@@ -988,7 +988,7 @@ function checkCircleClick(event) {
   const circleUser = parentDiv.querySelector('#activeUser');
   let maxResa = 4;
   if (parentDiv.classList.contains('big_rectangle')){
-    maxResa = 5;
+    maxResa = 6;
   }
 
   if (this.classList.contains('self-circle-active')){
@@ -1137,7 +1137,7 @@ async function fetchReservations(mainDiv) {
 
       let maxResa = 4;
       if (rectangle.classList.contains('big_rectangle')){
-        maxResa = 5;
+        maxResa = 6;
       }
 
       const resaRectangleShow = resaRectangle.slice(0, maxResa);
