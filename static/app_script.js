@@ -679,6 +679,12 @@ leftScroll.addEventListener('click', () => {
   activeScrollIndicator()
 });
 
+const centerScroll = document.querySelector('.indicator:not([class*=" "])');
+centerScroll.addEventListener('click', () => {
+  scrollToIndex(12);
+  activeScrollIndicator()
+});
+
 const rightScroll = document.querySelector(".indicator.right");
 rightScroll.addEventListener('click', () => {
   scrollToIndex(currentIndex + 1);
