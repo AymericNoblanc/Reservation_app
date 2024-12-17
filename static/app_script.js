@@ -707,6 +707,43 @@ historyButton.addEventListener('click', () => {
   activeScrollIndicator()
 });
 
+// Gestion du ratio
+
+function getViewportRatio() {
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+  const ratio = width / height;
+  if (ratio <= 1){
+    return "vertical";
+  }else if(ratio > 2){
+    return "horizontal long";
+  }else{
+    return "horizontal court";
+  }
+}
+
+let currentAspectRatio = getViewportRatio();
+window.addEventListener('resize', () => {
+  const newRatio = getViewportRatio();
+
+  if (newRatio !== currentAspectRatio) {
+    currentAspectRatio = newRatio;
+
+    document.querySelectorAll('.oneWeekContainer').forEach(week => {
+      if (weekReservationData.some(entry => entry.date === week.id)) {
+        const allRectangle = week.querySelectorAll(".big_rectangle, .small_rectangle");
+        allRectangle.forEach(rectangle => {
+          rectangle.querySelector('.nbResa').remove();
+          rectangle.removeEventListener('click', lookupClick);
+          rectangle.querySelectorAll('.circle').forEach(e => e.remove());
+          rectangle.querySelector('.self-circle').classList.remove('self-circle-active');
+        });
+        fetchReservations(week);
+      }
+    });
+  }
+});
+
 // Création d'éléments
 
 function createReservationCircle(user, rectangle) {

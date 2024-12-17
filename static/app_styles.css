@@ -690,28 +690,10 @@ input[type="range"]::-moz-range-thumb {
     font-size: 15px;
     margin-left: 12px;
   }
-  @keyframes growDayOfTheWeek {
-    0% {
-      font-size: 2.6738vh;
-    }
-    100% {
-      font-size: 4.2781vh;
-    }
-  }
-
-
   .dayNum{
     font-size: 10px;
     margin-left: 20px;
     margin-top: 24px;
-  }
-  @keyframes growDayNum {
-    0% {
-      font-size: 1.8717vh;
-    }
-    100% {
-      font-size: 2.6738vh;
-    }
   }
 
 
