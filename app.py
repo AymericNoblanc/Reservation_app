@@ -1201,5 +1201,5 @@ def cancel_reservation(domaine):
 # Lancer l'application Flask
 if __name__ == '__main__':
 
-    #app.run(host="192.168.1.8", debug=True)
-    app.run(debug=True)
+    app.run(host="192.168.1.8", debug=True)
+    #app.run(debug=True)

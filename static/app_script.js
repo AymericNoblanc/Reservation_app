@@ -391,6 +391,8 @@ function createProfile() {
     document.querySelectorAll("#activeUser").forEach(element => {
       element.style.backgroundColor = `hsl(${(hue + 60)}, 70%, ${luminosity}%)`;
       element.textContent = profileForm.querySelector('#initials').value
+      const elementParentDiv = element.parentElement.querySelector('.lookup_list_name')
+      if (elementParentDiv) elementParentDiv.textContent = profileForm.querySelector('#first-name').value + ' ' + profileForm.querySelector('#last-name').value;
     });
     selectUserCircle.style.backgroundColor = `hsl(${(hue + 60)}, 70%, ${luminosity}%)`;
     selectUserCircle.textContent = profileForm.querySelector('#initials').value;
@@ -716,9 +718,9 @@ function getViewportRatio() {
   if (ratio <= 1){
     return "vertical";
   }else if(ratio > 2){
-    return "horizontal long";
+    return "horizontal mobile"; // Mobile en horizontal : plus large
   }else{
-    return "horizontal court";
+    return "horizontal desktop"; // Ecran d'ordinateur
   }
 }
 
@@ -727,19 +729,31 @@ window.addEventListener('resize', () => {
   const newRatio = getViewportRatio();
 
   if (newRatio !== currentAspectRatio) {
+
+    const actualWeekShow = currentIndex;
+
     currentAspectRatio = newRatio;
+
+    document.querySelector('.lookup_rectangle')?.remove();
+    document.querySelector('.overlayLookup')?.remove();
 
     document.querySelectorAll('.oneWeekContainer').forEach(week => {
       if (weekReservationData.some(entry => entry.date === week.id)) {
         const allRectangle = week.querySelectorAll(".big_rectangle, .small_rectangle");
         allRectangle.forEach(rectangle => {
           rectangle.querySelector('.nbResa').remove();
+          rectangle.querySelector('.lookup_list')?.remove();
           rectangle.removeEventListener('click', lookupClick);
           rectangle.querySelectorAll('.circle').forEach(e => e.remove());
           rectangle.querySelector('.self-circle').classList.remove('self-circle-active');
         });
         fetchReservations(week);
       }
+    });
+
+    weekContainer.scrollTo({
+      left: actualWeekShow * weekContainer.clientWidth,
+      behavior: 'instant',
     });
   }
 });
@@ -1013,56 +1027,30 @@ function lookupClick(event) {
   }, 300000)
 }
 
-function checkCircleClick(event) {
+async function checkCircleClick(event) {
   event.stopPropagation();
   event.currentTarget.classList.toggle('self-circle-active');
 
   const site = sitesData.find(site => site.name === switchSiteSelected.name);
 
-  const parentDiv = this.parentElement;
-  const numResa = parentDiv.querySelector('.nbResa');
-  const listOfCircles = parentDiv.querySelectorAll('.circle');
-  const circleUser = parentDiv.querySelector('#activeUser');
-  let maxResa = 4;
-  if (parentDiv.classList.contains('big_rectangle')){
-    maxResa = 6;
+  let parentDiv = this.parentElement;
+
+  if (this.classList.contains('self-circle-active')) {
+    await createReservation(site.id, parentDiv.id);
+  } else {
+    await deleteReservation(site.id, parentDiv.id);
   }
 
-  if (this.classList.contains('self-circle-active')){
-    // Create reservation
-    createReservation(site.id, this.parentElement.id);
-    numResa.textContent = parseInt(numResa.textContent) + 1;
-    if (listOfCircles.length -1 < maxResa){
-      const circle = createReservationCircle(User, parentDiv);
-      parentDiv.appendChild(circle);
-    }
-    if (parentDiv.style.backgroundColor === 'rgb(255, 161, 120)'){
-      parentDiv.style.backgroundColor = '#FFE371';
-      parentDiv.addEventListener('click', lookupClick);
-    }
-  }else{
-    // Delete reservation
-    deleteReservation(site.id, this.parentElement.id);
-    numResa.textContent = parseInt(numResa.textContent) - 1;
-    if (circleUser !== null){
-      listOfCircles.forEach(circle => {
-        if (!circle.classList.contains('nbResa')) {
-          circle.remove();
-        }
-      });
+  parentDiv = parentDiv.parentElement
 
-      const resaRectangle = reservationData.filter(reservation => reservation.date === parentDiv.id && reservation.site_id === switchSiteSelected.id && reservation.user_id !== User.id).slice(0, maxResa);
+  parentDiv.querySelectorAll('.nbResa').forEach(e => e.remove());
+  parentDiv.querySelectorAll('.lookup_list')?.forEach(e => e.remove());
+  parentDiv.removeEventListener('click', lookupClick);
+  parentDiv.querySelectorAll('.circle').forEach(e => e.remove());
+  parentDiv.querySelectorAll('.self-circle').forEach(e => e.classList.remove('self-circle-active'));
 
-      resaRectangle.forEach(reservation => {
-        const circle = createReservationCircle(usersData.find(user => user.id === reservation.user_id), parentDiv);
-        parentDiv.appendChild(circle);
-      });
-    }
-    if (listOfCircles.length === 2){
-      parentDiv.style.backgroundColor = '#FFA178';
-      parentDiv.removeEventListener('click', lookupClick);
-    }
-  }
+  fetchReservations(parentDiv);
+
 }
 
 // Création d'une semaine
@@ -1167,28 +1155,63 @@ async function fetchReservations(mainDiv) {
       if (resaRectangle.length === 0){
         rectangle.style.backgroundColor = '#FFA178';
       }else{
-        rectangle.addEventListener('click', lookupClick);
+        if (currentAspectRatio === 'vertical') rectangle.addEventListener('click', lookupClick);
         rectangle.style.backgroundColor = '#FFE371';
       }
-
-
-      let maxResa = 4;
-      if (rectangle.classList.contains('big_rectangle')){
-        maxResa = 6;
-      }
-
-      const resaRectangleShow = resaRectangle.slice(0, maxResa);
-
-      resaRectangleShow.forEach(reservation => {
-        const circle = createReservationCircle(users.find(user => user.id === reservation.user_id), rectangle);
-
-        rectangle.appendChild(circle);
-      });
 
       const checkCircle = rectangle.querySelector('.self-circle');
       if (reservationData.find(reservation => reservation.date === rectangle.id && reservation.user_id === User.id && reservation.site_id === switchSiteSelected.id)) {
         checkCircle.classList.add('self-circle-active');
       }
+
+      if (currentAspectRatio === 'vertical') {
+        let maxResa = 4;
+        if (rectangle.classList.contains('big_rectangle')) {
+          maxResa = 6;
+        }
+
+        const resaRectangleShow = resaRectangle.slice(0, maxResa);
+
+        resaRectangleShow.forEach(reservation => {
+          const circle = createReservationCircle(users.find(user => user.id === reservation.user_id), rectangle);
+
+          rectangle.appendChild(circle);
+        });
+      }else if (currentAspectRatio === 'horizontal mobile') {
+        const reservationListDiv = document.createElement('div');
+        reservationListDiv.classList.add('lookup_list');
+        reservationListDiv.style.marginTop = "34%";
+
+        rectangle.appendChild(reservationListDiv);
+
+        const resaRectangle = reservationData.filter(reservation => reservation.date === rectangle.id && reservation.site_id === switchSiteSelected.id);
+
+        resaRectangle.forEach(reservation => {
+
+          let container = document.createElement('div');
+          container.classList.add('lookup_list_element');
+
+          // Créer un div pour le cercle
+          let circle = createReservationCircle(usersData.find(user => user.id === reservation.user_id), rectangle);
+
+          let reservationName = document.createElement('div');
+          reservationName.classList.add('lookup_list_name');
+          reservationName.textContent = usersData.find(user => user.id === reservation.user_id).firstname + ' ' + usersData.find(user => user.id === reservation.user_id).lastname;
+
+          container.appendChild(circle);
+          container.appendChild(reservationName);
+          // Ajouter le cercle au rectangle
+          reservationListDiv.appendChild(container);
+
+          circle.style.position = 'relative';
+          circle.style.left = `${15 * 100 / RATIO}vh`;
+          circle.style.bottom = `${0 * 100 / RATIO}vh`;
+
+          reservationName.style.color = 'rgb(71, 71, 71)';
+        });
+
+      }
+
     });
 
   } catch (error) {
@@ -1208,6 +1231,9 @@ function createWeek (createHistory = false) {
 
 window.onload = async function () {
 
+  actualMondayDate.setDate(actualMondayDate.getDate() + 2); // Si c'est le week end charger la semaine suivante
+  actualMondayDate.setDate(actualMondayDate.getDate() - (actualMondayDate.getDay() + 6) % 7); // Trouver le lundi de la semaine
+
   weekTemplate();
 
   await getSites();
@@ -1218,9 +1244,6 @@ window.onload = async function () {
   document.querySelectorAll('.oneWeekContainer').forEach(e => e.remove());
   currentCreateWeek = 0;
 
-  actualMondayDate.setDate(actualMondayDate.getDate() + 2); // Si c'est le week end charger la semaine suivante
-  actualMondayDate.setDate(actualMondayDate.getDate() - (actualMondayDate.getDay() + 6) % 7); // Trouver le lundi de la semaine
-
   createWeek();
   createWeek();
   createWeek();
@@ -1228,7 +1251,7 @@ window.onload = async function () {
   createWeek(true);
   createWeek(true);
 
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < weekLimit-2; i++) {
     weekTemplate(true);
   }
 

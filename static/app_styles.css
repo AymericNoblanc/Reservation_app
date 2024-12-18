@@ -355,6 +355,7 @@ nav .siteSlideAnimation {
   box-sizing: border-box;
   transition: margin-top 0.3s ease;
   background-color: rgba(255, 227, 113, 0);
+  overflow-x: hidden;
 }
 .lookup_list::-webkit-scrollbar {
   width: 0.8021vh;
@@ -366,12 +367,20 @@ nav .siteSlideAnimation {
 
 
 .lookup_list_name {
+  position : absolute;
   margin-top: auto;
   margin-bottom: auto;
-  margin-left: 3.3422vh;
+  left: 8.5vh;
   color: rgb(71, 71, 71, 0);
   font-size: 2.6738vh;
   font-weight: bold;
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* Limite à 2 lignes */
+  -webkit-box-orient: vertical;
+  overflow: hidden; /* Cache le débordement */
+  text-overflow: ellipsis; /* Ajoute des points de suspension si le texte déborde */
+  text-align: left; /* Centre le texte à gauche */
+  line-height: 1;
 }
 @keyframes growlookup_list_name {
   0% {
@@ -385,7 +394,6 @@ nav .siteSlideAnimation {
 
 .lookup_list_element {
   width: 100%;
-  height: 6.6845vh;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -649,17 +657,10 @@ input[type="range"]::-moz-range-thumb {
 /* Style pour les téléphone en mode paysage */
 
 @media screen and (aspect-ratio>2 ) {
-  body {
-    /*background-color: #1f1ff4;*/
-  }
 
   .weekTitle{
-    font-family: Arial, sans-serif;
-    color: rgb(0, 0, 0);
-    font-size: 25px;
-    font-weight: bold;
-    margin-bottom: 3.3422vh;
-    margin-top: 10px;
+    font-size: 6.4103vh;
+    margin-top: 2.5641vh;
   }
 
   .days, .small, .top, .bottom {
@@ -672,53 +673,60 @@ input[type="range"]::-moz-range-thumb {
 
 
   .big_rectangle, .small_rectangle {
-    position: relative;
-    background-color: #EEEEEF;
-    color: white;
-    font-size: 3.2086vh;
-    font-weight: bold;
-    border-radius: 1.7380vh;
-    z-index: 0;
-    width: 120px;
-    height: 150px;
-    margin: 0 auto;
-    margin-left: 26px;
+    width: 30.7692vh;
+    height: 38.4615vh;
+    margin-left: 6.6667vh;
   }
 
 
   .dayOfTheWeek{
-    font-size: 15px;
-    margin-left: 12px;
+    font-size: 3.8462vh;
+    margin-left: 3.0769vh;
   }
   .dayNum{
-    font-size: 10px;
-    margin-left: 20px;
-    margin-top: 24px;
+    font-size: 2.5641vh;
+    margin-left: 5.1282vh;
+    margin-top: 6.1538vh;
   }
 
 
   .self-circle {
-    width: 15px;
-    height: 15px;
-    border: 2px solid #A9A9A9; /* Dark gray border */
+    width: 3.8462vh;
+    height: 3.8462vh;
+    border: 0.5128vh solid #A9A9A9; /* Dark gray border */
   }
   .self-circle-active {
-    border: 2px solid #3ab638; /* Dark gray border */
+    border: 0.5128vh solid #3ab638; /* Dark gray border */
   }
   .self-circle-old {
-    width: 15px;
-    height: 15px;
-    border: 2px solid rgba(89, 88, 88, 0.20);
+    width: 3.8462vh;
+    height: 3.8462vh;
+    border: 0.5128vh solid rgba(89, 88, 88, 0.20);
   }
 
 
   .nbResa{
-    width: 18px;
-    height: 18px;
-    font-size: 11px;
+    width: 4.6154vh;
+    height: 4.6154vh;
+    font-size: 2.8205vh;
+    right: 1.5069vh;
+    bottom: 1.6053vh;
   }
 
 
+  .lookup_list {
+    height: 70%;
+  }
+
+  .lookup_list_name {
+    font-size: 2.0513vh;
+  }
+
+  .lookup_list_element {
+    margin-top: 0;
+    margin-bottom: 1.2821vh;
+    display: flex;
+  }
 
 
 }
