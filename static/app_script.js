@@ -669,8 +669,6 @@ function scrollToIndex(index) {
     left: scrollPosition,
     behavior: 'smooth',
   });
-
-  currentIndex = index; // Mettre à jour l'index actuel
 }
 
 const leftScroll = document.querySelector(".indicator.left");
