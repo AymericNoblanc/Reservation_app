@@ -962,6 +962,8 @@ function lookupClick(event) {
     let container = document.createElement('div');
     container.classList.add('lookup_list_element');
 
+    let containerCircle = document.createElement('div');
+
     // Créer un div pour le cercle
     let circle = createReservationCircle(usersData.find(user => user.id === reservation.user_id), lookupRectangle);
 
@@ -970,7 +972,10 @@ function lookupClick(event) {
     reservationName.textContent = usersData.find(user => user.id === reservation.user_id).firstname + ' ' + usersData.find(user => user.id === reservation.user_id).lastname;
     reservationName.style.animation = 'growlookup_list_name 0.3s ease-out';
 
-    container.appendChild(circle);
+    containerCircle.style.width = '20%';
+    containerCircle.appendChild(circle);
+    container.appendChild(containerCircle);
+    reservationName.style.width = '80%;';
     container.appendChild(reservationName);
     // Ajouter le cercle au rectangle
     reservationListDiv.appendChild(container);
@@ -1191,6 +1196,9 @@ async function fetchReservations(mainDiv) {
           let container = document.createElement('div');
           container.classList.add('lookup_list_element');
 
+          let containerCircle = document.createElement('div');
+          containerCircle.classList.add('lookup_list_container_circle');
+
           // Créer un div pour le cercle
           let circle = createReservationCircle(usersData.find(user => user.id === reservation.user_id), rectangle);
 
@@ -1198,7 +1206,10 @@ async function fetchReservations(mainDiv) {
           reservationName.classList.add('lookup_list_name');
           reservationName.textContent = usersData.find(user => user.id === reservation.user_id).firstname + ' ' + usersData.find(user => user.id === reservation.user_id).lastname;
 
-          container.appendChild(circle);
+          containerCircle.style.width = '27%';
+          containerCircle.appendChild(circle);
+          container.appendChild(containerCircle);
+          reservationName.style.width = '73%;';
           container.appendChild(reservationName);
           // Ajouter le cercle au rectangle
           reservationListDiv.appendChild(container);
