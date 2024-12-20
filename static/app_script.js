@@ -605,6 +605,7 @@ function sitesSelection() {
           const allRectangle = week.querySelectorAll(".big_rectangle, .small_rectangle");
           allRectangle.forEach(rectangle => {
             rectangle.querySelector('.nbResa').remove();
+            rectangle.querySelector('.lookup_list')?.remove();
             rectangle.removeEventListener('click', lookupClick);
             rectangle.querySelectorAll('.circle').forEach(e => e.remove());
             rectangle.querySelector('.self-circle').classList.remove('self-circle-active');
@@ -722,9 +723,9 @@ function getViewportRatio() {
   const width = window.innerWidth;
   const height = window.innerHeight;
   const ratio = width / height;
-  if (ratio <= 1){
+  if (ratio <= 0.76){
     return "vertical";
-  }else if(ratio > 2){
+  }else if(ratio > 2.3){
     return "horizontal mobile"; // Mobile en horizontal : plus large
   }else{
     return "horizontal desktop"; // Ecran d'ordinateur
@@ -1170,7 +1171,7 @@ async function fetchReservations(mainDiv) {
         rectangle.style.backgroundColor = '#FFA178';
         rectangle.style.cursor = 'default';
       }else{
-        if (currentAspectRatio === 'vertical'){
+        if (currentAspectRatio === 'vertical' || (currentAspectRatio === 'horizontal desktop' && rectangle.classList.contains('small_rectangle'))){
           rectangle.addEventListener('click', lookupClick);
           rectangle.style.cursor = 'pointer';
         }else{
@@ -1184,7 +1185,7 @@ async function fetchReservations(mainDiv) {
         checkCircle.classList.add('self-circle-active');
       }
 
-      if (currentAspectRatio === 'vertical') {
+      if (currentAspectRatio === 'vertical' || (currentAspectRatio === 'horizontal desktop' && rectangle.classList.contains('small_rectangle'))) {
         let maxResa = 4;
         if (rectangle.classList.contains('big_rectangle')) {
           maxResa = 6;
@@ -1197,10 +1198,9 @@ async function fetchReservations(mainDiv) {
 
           rectangle.appendChild(circle);
         });
-      }else if (currentAspectRatio === 'horizontal mobile') {
+      }else if (currentAspectRatio === 'horizontal mobile' || (currentAspectRatio === 'horizontal desktop' && rectangle.classList.contains('big_rectangle'))) {
         const reservationListDiv = document.createElement('div');
         reservationListDiv.classList.add('lookup_list');
-        reservationListDiv.style.marginTop = "34%";
 
         rectangle.appendChild(reservationListDiv);
 

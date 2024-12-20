@@ -639,19 +639,67 @@ input[type="range"]::-moz-range-thumb {
 
 /* Style pour les écrans d'ordinateur */
 
-@media screen and (aspect-ratio<=2) and (aspect-ratio>1) {
-  body {
-    /*background-color: #1ff41f;*/
+@media screen and (aspect-ratio<=2.3) and (aspect-ratio>0.76) {
+
+  .weekTitle{
+    font-size: 5vh;
   }
+
+  .big_rectangle {
+    width: 30.7692vh;
+    height: 38.4615vh;
+  }
+
+  .days {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    margin: 0 auto;
+    gap: 3.7021vh;
+  }
+  .small {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: column;
+  }
+  .top, .bottom {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+  }
+
+  .lookup_list {
+    margin-top: 26%;
+  }
+
+  .lookup_list_name {
+    font-size: 2.0513vh;
+  }
+
 }
 
+@media screen and (aspect-ratio<=1) and (aspect-ratio>0.76) {
 
+  body{
+    margin: 2px
+  }
+
+  .big_rectangle {
+    width: 30.7692vh;
+    height: 36vh;
+  }
+
+  .days {
+    gap: 1.2406vh;
+  }
+
+}
 
 
 
 /* Style pour les téléphone en mode paysage */
 
-@media screen and (aspect-ratio>2 ) {
+@media screen and (aspect-ratio>2.3 ) {
 
   .weekTitle{
     font-size: 6.4103vh;
@@ -711,6 +759,7 @@ input[type="range"]::-moz-range-thumb {
 
   .lookup_list {
     height: 70%;
+    margin-top: 34%;
   }
 
   .lookup_list_name {
