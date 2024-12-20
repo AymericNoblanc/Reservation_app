@@ -696,10 +696,17 @@ function activeScrollIndicator() {
     leftScroll.classList.add('active');
   } else if (currentIndex === weekLimit + currentCreateHistoryTemplate - 2) {
     rightScroll.classList.add('active');
+    rightScroll.style.cursor = 'default';
+  } else if (currentIndex === 0) {
+    leftScroll.style.cursor = 'default';
   } else if (currentIndex < currentCreateHistoryTemplate - 1){
     document.querySelector(".history").style.opacity = "1";
-  }else{
+    rightScroll.style.cursor = 'e-resize';
+    leftScroll.style.cursor = 'w-resize';
+  } else{
     document.querySelector('.indicator:not([class*=" "])').classList.add('active');
+    rightScroll.style.cursor = 'e-resize';
+    leftScroll.style.cursor = 'w-resize';
   }
 }
 
@@ -1050,7 +1057,9 @@ async function checkCircleClick(event) {
 
   parentDiv.querySelectorAll('.nbResa').forEach(e => e.remove());
   parentDiv.querySelectorAll('.lookup_list')?.forEach(e => e.remove());
-  parentDiv.removeEventListener('click', lookupClick);
+  Array.from(parentDiv.children).forEach(child => {
+    child.removeEventListener('click', lookupClick);
+  });
   parentDiv.querySelectorAll('.circle').forEach(e => e.remove());
   parentDiv.querySelectorAll('.self-circle').forEach(e => e.classList.remove('self-circle-active'));
 
@@ -1159,8 +1168,14 @@ async function fetchReservations(mainDiv) {
 
       if (resaRectangle.length === 0){
         rectangle.style.backgroundColor = '#FFA178';
+        rectangle.style.cursor = 'default';
       }else{
-        if (currentAspectRatio === 'vertical') rectangle.addEventListener('click', lookupClick);
+        if (currentAspectRatio === 'vertical'){
+          rectangle.addEventListener('click', lookupClick);
+          rectangle.style.cursor = 'pointer';
+        }else{
+          rectangle.style.cursor = 'default';
+        }
         rectangle.style.backgroundColor = '#FFE371';
       }
 

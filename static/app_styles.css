@@ -36,7 +36,7 @@ nav .sites {
   text-decoration: none;
   text-align: center;
   color: black;
-  cursor: default;
+  cursor: pointer;
 }
 .sites:nth-child(1) {
   width: 13.3690vh;
@@ -71,6 +71,7 @@ nav .siteSlideAnimation {
   background-color: #d8d8db;
   margin-left: 29%;
   position: absolute;
+  cursor: context-menu;
 }
 
 
@@ -142,6 +143,7 @@ nav .siteSlideAnimation {
   font-weight: bold;
   border-radius: 1.7380vh;
   z-index: 0;
+  cursor: pointer;
 }
 .big_rectangle {
   width: 42.7807vh;
@@ -234,6 +236,7 @@ nav .siteSlideAnimation {
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
 }
 .self-circle-active {
   background-color: #88e488; /* Light gray background */
@@ -272,19 +275,6 @@ nav .siteSlideAnimation {
 
 /* Partie du bas avec l'indicateur de scroll */
 
-.scroll-button-left, .scroll-button-right {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  color: grey;
-  cursor: pointer;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 1.2em;
-}
-
-
 /* Conteneur des indicateurs */
 .scroll-indicator {
   display: flex;
@@ -302,8 +292,16 @@ nav .siteSlideAnimation {
   background-color: #ccc; /* Couleur des points inactifs */
   border-radius: 50%; /* Cercle parfait */
   transition: background-color 0.3s ease; /* Animation pour le changement de couleur */
+  cursor: pointer;
 }
 
+.indicator.left{
+  cursor: w-resize;
+}
+
+.indicator.right{
+  cursor: e-resize;
+}
 
 /* Point actif */
 .scroll-indicator .indicator.active {
@@ -325,6 +323,7 @@ nav .siteSlideAnimation {
   align-items: center;
   display: flex;
   opacity: 0;
+  cursor: pointer;
 }
 
 
