@@ -566,10 +566,15 @@ function sitesSelection() {
 
   switchSiteSelected = sitesData[0];
 
-  navContainer.style.width = sitesData.length * 100 * 100 / RATIO + 'vh';
-
   const siteSlideAnimation = document.querySelector('.siteSlideAnimation');
-  siteSlideAnimation.style.width = `${94 * 100 / RATIO}vh`; // 100 - 6 pour la marge
+
+  if (currentAspectRatio === 'horizontal mobile'){
+    navContainer.style.width = sitesData.length * 100 * 100 / (RATIO*2) + 'vw';
+    siteSlideAnimation.style.width = `${94 * 100 / (RATIO*2)}vw`;
+  } else {
+    navContainer.style.width = sitesData.length * 100 * 100 / RATIO + 'vh';
+    siteSlideAnimation.style.width = `${94 * 100 / RATIO}vh`;// 100 - 6 pour la marge
+  }
 
   sitesData.slice().reverse().forEach(function (site, index) {
     index = sitesData.length - 1 - index;
@@ -579,7 +584,8 @@ function sitesSelection() {
     siteDiv.textContent = site.display_name;
     if (index === 0){
       siteDiv.classList.add('active');
-      siteSlideAnimation.style.marginLeft = `${3 * 100 / RATIO}vh`;
+      if (currentAspectRatio === 'horizontal mobile'){siteSlideAnimation.style.marginLeft = `${3 * 100 / (RATIO*2)}vw`;}
+      else {siteSlideAnimation.style.marginLeft = `${3 * 100 / RATIO}vh`;}
     }
     navContainer.insertBefore(siteDiv, navContainer.firstChild);
   });
@@ -597,8 +603,14 @@ function sitesSelection() {
 
       // Déplacer l'animation
       const marginLeft = this.id * 100 + 3; // Valeur "left" à partir de l'attribut data target
-      siteSlideAnimation.style.marginLeft = marginLeft * 100 / RATIO + 'vh';
-      siteSlideAnimation.style.width = `${94 * 100 / RATIO}vh`; // 100 - 6 pour la marge
+      if (currentAspectRatio === 'horizontal mobile'){
+        siteSlideAnimation.style.marginLeft = marginLeft * 100 / (RATIO*2) + 'vw';
+        siteSlideAnimation.style.width = `${94 * 100 / (RATIO*2)}vw`;// 100 - 6 pour la marge
+      } else {
+        siteSlideAnimation.style.marginLeft = marginLeft * 100 / RATIO + 'vh';
+        siteSlideAnimation.style.width = `${94 * 100 / RATIO}vh`;// 100 - 6 pour la marge
+      }
+
 
       document.querySelectorAll('.oneWeekContainer').forEach(week => {
         if (weekReservationData.some(entry => entry.date === week.id)) {
@@ -725,7 +737,7 @@ function getViewportRatio() {
   const ratio = width / height;
   if (ratio <= 0.76){
     return "vertical";
-  }else if(ratio > 2.3){
+  }else if(ratio > 2.2){
     return "horizontal mobile"; // Mobile en horizontal : plus large
   }else{
     return "horizontal desktop"; // Ecran d'ordinateur
@@ -741,6 +753,16 @@ window.addEventListener('resize', () => {
     const actualWeekShow = currentIndex;
 
     currentAspectRatio = newRatio;
+
+    const siteSlideAnimation = document.querySelector('.siteSlideAnimation');
+
+    if (currentAspectRatio === 'horizontal mobile'){
+      navContainer.style.width = sitesData.length * 100 * 100 / (RATIO*2) + 'vw';
+      siteSlideAnimation.style.width = `${94 * 100 / (RATIO*2)}vw`;
+    } else {
+      navContainer.style.width = sitesData.length * 100 * 100 / RATIO + 'vh';
+      siteSlideAnimation.style.width = `${94 * 100 / RATIO}vh`;// 100 - 6 pour la marge
+    }
 
     document.querySelector('.lookup_rectangle')?.remove();
     document.querySelector('.overlayLookup')?.remove();
